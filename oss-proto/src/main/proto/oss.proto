@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package apzda.oss;
+
+import "gsvc/ext.proto";
+import "buf/validate/validate.proto";
+
+option java_package = "com.apzda.cloud.oss.proto";
+option java_multiple_files = true;
+option java_outer_classname = "OssProto";
+
+
+message UploadReq {
+  optional string name = 1;
+  repeated gsvc.UploadFile files = 2 [(buf.validate.field).repeated.min_items = 1]; // 文件列表
+}
+
+message FileInfo {
+  uint32 index = 1; // 第几个文件
+  optional string url = 2; // 文件的URL
+  optional string path = 3; // 文件的绝对路径
+  optional string backend = 4;// 文件的后端存储
+  int32 error = 5; // 0: 正常; 其它值出错
+  optional string message = 6; // 当error!=0时的错误提示
+  optional bool exist = 7; // 文件是否存在，用于查询
+  uint64 length = 8;// 文件长度
+  optional string file_id = 9;// 文件ID
+  string ext = 10;
+  string filename = 11;
+  optional uint64 create_time = 12;
+}
+/**
+ * 文件上传结果.
+ */
+message UploadRes {
+  int32 err_code = 1;
+  optional string err_msg = 2;
+  repeated FileInfo files = 3; // 文件列表
+}
+
+message ChunkUploadReq {
+  string name = 1 [(buf.validate.field).required = true];
+  int32 total_chunk = 2 [(buf.validate.field).uint32.gte = 1];
+  int32 chunk = 3 [(buf.validate.field).uint32.gte = 1];
+  gsvc.UploadFile file = 50 [(buf.validate.field).required = true];
+}
+
+message  ChunkUploadRes{
+  int32 err_code = 1;
+  optional string err_msg = 2;
+  optional FileInfo file = 50;
+}
+
+message DeleteReq {
+  repeated string paths = 1 [(buf.validate.field).repeated.min_items = 1]; // 文件列表
+}
+
+message DeleteRes {
+  int32 err_code = 1;
+  optional string err_msg = 2;
+  repeated string paths = 3;
+}
+
+message QueryReq {
+  repeated string paths = 1 [(buf.validate.field).repeated.min_items = 1]; // 文件列表
+}
+message QueryRes {
+  int32 err_code = 1;
+  optional string err_msg = 2;
+  repeated FileInfo files = 3; // 文件列表
+}
+
+service OssService {
+  /**
+   * 查询
+   */
+  rpc query(QueryReq) returns(QueryRes);
+  /**
+   * 删除
+   */
+  rpc delete(DeleteReq) returns (DeleteRes);
+  /**
+   * 上传文件
+   */
+  rpc upload(UploadReq) returns (UploadRes);
+  /**
+   * 分片上传
+   */
+  rpc chunkUpload(ChunkUploadReq) returns(ChunkUploadRes);
+}
+

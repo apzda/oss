@@ -1,0 +1,130 @@
+/*
+ * Copyright (C) 2023-2023 Fengz Ning (windywany@gmail.com)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package com.apzda.cloud.oss.ali.file;
+
+import cn.hutool.core.io.FileUtil;
+import com.aliyun.oss.OSSClient;
+import com.apzda.cloud.oss.ali.backend.AliOssBackend;
+import com.apzda.cloud.oss.config.BackendConfig;
+import com.apzda.cloud.oss.file.IOssFile;
+import com.apzda.cloud.oss.proto.FileInfo;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.FileCopyUtils;
+
+import java.io.*;
+
+/**
+ * @author fengz (windywany@gmail.com)
+ * @version 1.0.0
+ * @since 1.0.0
+ **/
+@Slf4j
+public class AliOssFile implements IOssFile {
+
+    private final String filePath;
+
+    private final BackendConfig config;
+
+    private final OSSClient ossClient;
+
+    private final String objectName;
+
+    public AliOssFile(String path, AliOssBackend backend) throws IOException {
+        if (path.startsWith("/")) {
+            this.filePath = path;
+            this.objectName = path.substring(1);
+        }
+        else {
+            this.filePath = "/" + path;
+            this.objectName = path;
+        }
+
+        this.config = backend.getConfig();
+        this.ossClient = backend.getOssClient();
+        if (this.ossClient == null) {
+            throw new IOException("AliOss Client is not initialized");
+        }
+    }
+
+    @Override
+    public File getLocalFile() throws IOException {
+        val tmpDir = config.getTmpDir();
+        val tempFile = FileUtil.createTempFile(new File(tmpDir));
+        FileCopyUtils.copy(getInputStream(), new BufferedOutputStream(new FileOutputStream(tempFile)));
+        return tempFile;
+    }
+
+    @Override
+    public InputStream getInputStream() throws IOException {
+        val bucketName = config.getBucketName();
+        val ossObject = ossClient.getObject(bucketName, objectName);
+
+        return new BufferedInputStream(ossObject.getObjectContent());
+    }
+
+    @Override
+    public FileInfo stat() throws FileNotFoundException {
+        try {
+            val meta = ossClient.getObjectMetadata(config.getBucketName(), objectName);
+            val userMeta = meta.getUserMetadata();
+            val fileId = userMeta.getOrDefault("fileId", "");
+            val builder = FileInfo.newBuilder();
+            builder.setError(0);
+            builder.setExist(true);
+            builder.setPath(filePath);
+            builder.setUrl(theUrl(filePath));
+            builder.setLength(meta.getContentLength());
+            builder.setFileId(fileId);
+            builder.setFilename(userMeta.getOrDefault("fileName", FileUtil.getName(filePath)));
+            builder.setExt(FileUtil.extName(builder.getFilename()));
+            builder.setCreateTime(Long.parseLong(userMeta.getOrDefault("createTime", "0")));
+            builder.setBackend("alioss");
+            return builder.build();
+        }
+        catch (Exception e) {
+            throw new FileNotFoundException(e.getMessage());
+        }
+    }
+
+    @Override
+    public boolean delete() throws IOException {
+        try {
+            val result = ossClient.deleteObject(config.getBucketName(), objectName);
+            if (result.getResponse().isSuccessful()) {
+                return true;
+            }
+            log.error("Cannot delete file: {} - {}", filePath, result.getResponse().getErrorResponseAsString());
+        }
+        catch (Exception e) {
+            log.error("Cannot delete file: {} - {}", filePath, e.getMessage());
+        }
+        throw new IOException(String.format("Cannot delete file: %s", filePath));
+    }
+
+    private String theUrl(String filePath) {
+        val baseUrl = config.getBaseUrl();
+        if (StringUtils.isBlank(baseUrl)) {
+            val bucketName = config.getBucketName();
+            val endpoint = config.getEndpoint();
+            return "https://" + bucketName + "." + endpoint + filePath;
+        }
+        return baseUrl + filePath;
+    }
+
+}
