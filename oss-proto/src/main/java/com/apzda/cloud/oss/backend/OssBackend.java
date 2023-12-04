@@ -27,10 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.DigestUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
 import java.util.Date;
 
@@ -50,6 +47,12 @@ public interface OssBackend {
     IOssFile getFile(String filePath) throws IOException;
 
     FileInfo uploadFile(File file, String path) throws IOException;
+
+    FileInfo uploadFile(InputStream stream, String fileName, String path) throws IOException;
+
+    default FileInfo uploadFile(InputStream stream, String fileName) throws IOException {
+        return uploadFile(stream, fileName, null);
+    }
 
     boolean delete(String filePath) throws IOException;
 

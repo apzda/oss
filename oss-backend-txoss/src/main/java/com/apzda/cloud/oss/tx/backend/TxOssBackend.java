@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.oss.minio.backend;
+package com.apzda.cloud.oss.tx.backend;
 
 import com.apzda.cloud.oss.backend.OssBackend;
 import com.apzda.cloud.oss.file.IOssFile;
@@ -29,7 +29,7 @@ import java.io.InputStream;
  * @version 1.0.0
  * @since 1.0.0
  **/
-public class MinioBackend implements OssBackend {
+public class TxOssBackend implements OssBackend {
     @Override
     public IOssFile getFile(String filePath) throws IOException {
         return null;

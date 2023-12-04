@@ -27,6 +27,7 @@ import org.springframework.util.FileCopyUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileAlreadyExistsException;
 
 /**
@@ -95,6 +96,11 @@ public class FsBackend implements OssBackend {
             val stat = ossFile.stat();
             return FileInfo.newBuilder(stat).setFilename(file.getName()).build();
         }
+    }
+
+    @Override
+    public FileInfo uploadFile(InputStream stream, String fileName, String path) throws IOException {
+        return null;
     }
 
     @Override

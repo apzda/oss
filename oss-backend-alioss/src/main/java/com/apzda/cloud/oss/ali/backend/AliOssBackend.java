@@ -33,6 +33,7 @@ import org.springframework.util.DigestUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileAlreadyExistsException;
 
 /**
@@ -105,6 +106,11 @@ public class AliOssBackend implements OssBackend {
 
             return ossFile.stat();
         }
+    }
+
+    @Override
+    public FileInfo uploadFile(InputStream stream, String fileName, String path) throws IOException {
+        return null;
     }
 
     @Override

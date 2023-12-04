@@ -14,9 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.oss.minio.backend;
+package com.apzda.cloud.oss.tx.file;
 
-import com.apzda.cloud.oss.backend.OssBackend;
 import com.apzda.cloud.oss.file.IOssFile;
 import com.apzda.cloud.oss.proto.FileInfo;
 
@@ -29,24 +28,24 @@ import java.io.InputStream;
  * @version 1.0.0
  * @since 1.0.0
  **/
-public class MinioBackend implements OssBackend {
+public class TxOssFile implements IOssFile {
     @Override
-    public IOssFile getFile(String filePath) throws IOException {
+    public File getLocalFile() throws IOException {
         return null;
     }
 
     @Override
-    public FileInfo uploadFile(File file, String path) throws IOException {
+    public InputStream getInputStream() throws IOException {
         return null;
     }
 
     @Override
-    public FileInfo uploadFile(InputStream stream, String fileName, String path) throws IOException {
+    public FileInfo stat() throws IOException {
         return null;
     }
 
     @Override
-    public boolean delete(String filePath) throws IOException {
+    public boolean delete() throws IOException {
         return false;
     }
 }

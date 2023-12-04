@@ -22,6 +22,7 @@ import com.apzda.cloud.oss.proto.FileInfo;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -36,6 +37,11 @@ public class FastDfsBackend implements OssBackend {
 
     @Override
     public FileInfo uploadFile(File file, String path) throws IOException {
+        return null;
+    }
+
+    @Override
+    public FileInfo uploadFile(InputStream stream, String fileName, String path) throws IOException {
         return null;
     }
 

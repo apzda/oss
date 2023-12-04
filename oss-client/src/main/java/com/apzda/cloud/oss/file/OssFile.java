@@ -51,7 +51,7 @@ public class OssFile implements IOssFile {
         return ossFile.getInputStream();
     }
 
-    public FileInfo stat() throws FileNotFoundException {
+    public FileInfo stat() throws IOException {
         if (fileInfo != null) {
             return fileInfo;
         }
