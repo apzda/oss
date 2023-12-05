@@ -14,20 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.oss.ali.backend;
+package com.apzda.cloud.oss.tx.backend;
 
-import com.aliyun.oss.ClientConfiguration;
-import com.aliyun.oss.OSSClient;
-import com.aliyun.oss.common.auth.DefaultCredentialProvider;
-import com.aliyun.oss.model.ObjectMetadata;
-import com.apzda.cloud.oss.ali.file.AliOssFile;
 import com.apzda.cloud.oss.backend.OssBackend;
 import com.apzda.cloud.oss.config.BackendConfig;
 import com.apzda.cloud.oss.file.IOssFile;
 import com.apzda.cloud.oss.proto.FileInfo;
+import com.apzda.cloud.oss.tx.file.TxOssFile;
+import com.qcloud.cos.COSClient;
+import com.qcloud.cos.ClientConfig;
+import com.qcloud.cos.auth.BasicCOSCredentials;
+import com.qcloud.cos.http.HttpProtocol;
+import com.qcloud.cos.model.ObjectMetadata;
+import com.qcloud.cos.region.Region;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.DigestUtils;
 
 import java.io.*;
@@ -40,41 +43,53 @@ import java.nio.file.FileAlreadyExistsException;
  **/
 @Slf4j
 @Getter
-public class AliOssBackend implements OssBackend {
+public class TxCosBackend implements OssBackend {
 
-    private OSSClient ossClient;
+    private COSClient cosClient;
 
     private BackendConfig config;
 
+    private String bucketName;
+
     @Override
     public boolean init(BackendConfig config) {
+        bucketName = config.getBucketName();
         this.config = config;
         try {
-            val endpoint = config.getEndpoint();
-            val accessKeyId = config.getAccessKey();
-            val accessKeySecret = config.getSecretKey();
-            val conf = new ClientConfiguration();
-            conf.setRequestTimeoutEnabled(true);
-            conf.setRequestTimeout((int) config.getUploadTimeout().toMillis());
-            conf.setConnectionTimeout((int) config.getConnectTimeout().toMillis());
-            conf.setSocketTimeout((int) config.getReadTimeout().toMillis());
+            val secretId = config.getAccessKey();
+            val secretKey = config.getSecretKey();
 
-            this.ossClient = new OSSClient(endpoint, new DefaultCredentialProvider(accessKeyId, accessKeySecret), conf);
+            val cred = new BasicCOSCredentials(secretId, secretKey);
+            val region = config.getRegion();
 
+            ClientConfig clientConfig;
+            if (StringUtils.isNotBlank(region)) {
+                clientConfig = new ClientConfig(new Region(region));
+            }
+            else {
+                clientConfig = new ClientConfig();
+            }
+
+            clientConfig.setRequestTimeOutEnable(true);
+            clientConfig.setRequestTimeout((int) config.getUploadTimeout().toMillis());
+            clientConfig.setConnectionTimeout((int) config.getConnectTimeout().toMillis());
+            clientConfig.setSocketTimeout((int) config.getReadTimeout().toMillis());
+            clientConfig.setHttpProtocol(HttpProtocol.https);
+            cosClient = new COSClient(cred, clientConfig);
             return true;
         }
         catch (Exception e) {
-            log.error("Cannot initialize AliOss Client: {}", e.getMessage());
+            log.error("Cannot initialize txCos Client: {}", e.getMessage());
             return false;
         }
     }
 
     @Override
     public IOssFile getFile(String filePath) throws IOException {
-        if (ossClient == null) {
-            throw new IOException("AliOss Client is not initialized");
+        if (cosClient == null) {
+            throw new IOException("TxCos Client is not initialized");
         }
-        return new AliOssFile(filePath, this);
+        return new TxOssFile(filePath, this);
     }
 
     @Override
@@ -84,19 +99,24 @@ public class AliOssBackend implements OssBackend {
 
     @Override
     public FileInfo uploadFile(InputStream stream, String fileName, String path) throws IOException {
-        if (ossClient == null) {
-            throw new IOException("AliOss Client is not initialized");
+        if (cosClient == null) {
+            throw new IOException("TxCos Client is not initialized");
         }
+
         try (val bs = new BufferedInputStream(stream)) {
+            // TODO: 优化计算文件md5值的算法
             bs.mark(0);
             val fileId = DigestUtils.md5DigestAsHex(bs);
+
             val filePath = generatePath(fileName, fileId, config.getPathPatten(), path);
             bs.reset();
             val meta = new ObjectMetadata();
-            meta.addUserMetadata("fileId", fileId);
-            meta.addUserMetadata("fileName", fileName);
-            meta.addUserMetadata("createTime", String.valueOf(System.currentTimeMillis()));
-            val result = ossClient.putObject(config.getBucketName(), filePath.substring(1), bs, meta);
+            meta.addUserMetadata("fileid", fileId);
+            meta.addUserMetadata("filename", fileName);
+            meta.addUserMetadata("createtime", String.valueOf(System.currentTimeMillis()));
+
+            val result = cosClient.putObject(bucketName, filePath.substring(1), bs, meta);
+
             if (result == null) {
                 throw new IOException("Cannot upload file: response is null");
             }
@@ -115,11 +135,11 @@ public class AliOssBackend implements OssBackend {
 
     @Override
     public boolean delete(String filePath) throws IOException {
-        if (ossClient == null) {
-            throw new IOException("AliOss Client is not initialized");
+        if (cosClient == null) {
+            throw new IOException("TxCos Client is not initialized");
         }
-        val result = ossClient.deleteObject(config.getBucketName(), filePath.substring(1));
-        return result != null && result.getResponse().isSuccessful();
+        cosClient.deleteObject(bucketName, filePath.substring(1));
+        return true;
     }
 
 }

@@ -42,7 +42,7 @@ public class BackendConfig {
 
     private String accessKey;
 
-    private String accessToken;
+    private String secretKey;
 
     private String endpoint;
 

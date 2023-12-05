@@ -1,4 +1,4 @@
-package com.apzda.cloud.oss.ali.backend;
+package com.apzda.cloud.oss.tx.backend;
 
 import com.apzda.cloud.oss.config.BackendConfig;
 import lombok.val;
@@ -18,19 +18,20 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since 1.0.0
  **/
 @Disabled
-class AliOssBackendTest {
+class TxCosBackendTest {
 
-    private static AliOssBackend ossBackend;
+    private static TxCosBackend ossBackend;
 
     @BeforeAll
     static void init() {
         val config = new BackendConfig();
         config.setAccessKey("");
         config.setSecretKey("");
-        config.setEndpoint("oss-cn-hangzhou.aliyuncs.com");
-        config.setBucketName("jh-mer-files");
+        config.setEndpoint("oss-1251743910.cos.ap-shanghai.myqcloud.com");
+        config.setRegion("ap-shanghai");
+        config.setBucketName("oss-1251743910");
         config.setPathPatten("yyyy");
-        ossBackend = new AliOssBackend();
+        ossBackend = new TxCosBackend();
         assertThat(ossBackend.init(config)).isTrue();
     }
 
@@ -41,8 +42,6 @@ class AliOssBackendTest {
 
     @Test
     void getFile() throws IOException {
-
-        // when
         val ossFile = ossBackend.getFile("/tmp/file.md");
         // then
         assertThat(ossFile).isNotNull();
@@ -62,7 +61,7 @@ class AliOssBackendTest {
 
     @Test
     void delete() throws IOException {
-        val file = new File("src/test/java/com/apzda/cloud/oss/ali/backend/AliOssBackendTest.java");
+        val file = new File("src/test/java/com/apzda/cloud/oss/tx/backend/TxCosBackendTest.java");
         // when
         val fileInfo = ossBackend.uploadFile(file);
         // then

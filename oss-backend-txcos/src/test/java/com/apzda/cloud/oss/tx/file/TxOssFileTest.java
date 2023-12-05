@@ -1,7 +1,7 @@
-package com.apzda.cloud.oss.ali.file;
+package com.apzda.cloud.oss.tx.file;
 
-import com.apzda.cloud.oss.ali.backend.AliOssBackend;
 import com.apzda.cloud.oss.config.BackendConfig;
+import com.apzda.cloud.oss.tx.backend.TxCosBackend;
 import lombok.val;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -21,31 +21,32 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since 1.0.0
  **/
 @Disabled
-class AliOssFileTest {
+class TxOssFileTest {
 
-    private static AliOssBackend ossBackend;
+    private static TxCosBackend ossBackend;
 
     @BeforeAll
     static void init() {
         val config = new BackendConfig();
         config.setAccessKey("");
         config.setSecretKey("");
-        config.setEndpoint("oss-cn-hangzhou.aliyuncs.com");
-        config.setBucketName("jh-mer-files");
+        config.setEndpoint("oss-1251743910.cos.ap-shanghai.myqcloud.com");
+        config.setRegion("ap-shanghai");
+        config.setBucketName("oss-1251743910");
         config.setPathPatten("yyyy");
-        ossBackend = new AliOssBackend();
+        ossBackend = new TxCosBackend();
         assertThat(ossBackend.init(config)).isTrue();
     }
 
     @AfterAll
     static void tearDown() {
-        assertThat(ossBackend.close()).isTrue();
+        ossBackend.close();
     }
 
     @Test
     void getLocalFile() throws IOException {
         // given
-        val file = new File("src/test/java/com/apzda/cloud/oss/ali/file/AliOssFileTest.java");
+        val file = new File("src/test/java/com/apzda/cloud/oss/tx/file/TxOssFileTest.java");
         // when
         val fileInfo = ossBackend.uploadFile(file);
         // then
@@ -53,7 +54,7 @@ class AliOssFileTest {
 
         // given
         val path = fileInfo.getPath();
-        val ossFile = new AliOssFile(path, ossBackend);
+        val ossFile = new TxOssFile(path, ossBackend);
 
         // when
         val stat = ossFile.stat();
@@ -68,8 +69,8 @@ class AliOssFileTest {
 
         // given
         val content = FileCopyUtils.copyToString(new FileReader(localFile));
-        // then check content
-        assertThat(content).contains("jh-mer-files");
+        // then
+        assertThat(content).contains("oss-1251743910");
 
         // when
         val deleted = ossFile.delete();

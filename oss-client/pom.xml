@@ -37,7 +37,7 @@
         </dependency>
         <dependency>
             <groupId>com.apzda.cloud</groupId>
-            <artifactId>oss-backend-txoss</artifactId>
+            <artifactId>oss-backend-txcos</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>

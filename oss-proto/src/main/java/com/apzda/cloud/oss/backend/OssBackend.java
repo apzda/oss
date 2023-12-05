@@ -65,14 +65,29 @@ public interface OssBackend {
     }
 
     default String generatePath(File file, String pathPatten, String path) throws FileAlreadyExistsException {
+
+        try (var fin = new FileInputStream(file)) {
+            val fileId = DigestUtils.md5DigestAsHex(fin);
+            return generatePath(file.getName(), fileId, pathPatten, path);
+        }
+        catch (FileAlreadyExistsException fe) {
+            throw fe;
+        }
+        catch (IOException e) {
+            logger.warn("Cannot md5 the file: {} - {}", file.getAbsoluteFile(), e.getMessage());
+            return "/" + StringUtils.strip(path, "/") + "/" + file.getName();
+        }
+    }
+
+    default String generatePath(String fileName, String fileId, String pathPatten, String path)
+            throws FileAlreadyExistsException {
         if (StringUtils.isBlank(path)) {
             path = DateUtil.format(new Date(), StringUtils.defaultIfBlank(pathPatten, "yyyy/MM/dd"));
         }
-        try (var fin = new FileInputStream(file)) {
-            val fileId = DigestUtils.md5DigestAsHex(fin);
-            val fileName = fileId.substring(0, 10);
-            val extName = "." + FileUtil.extName(file);
-            val destFile = "/" + StringUtils.strip(path, "/") + "/" + fileName;
+        try {
+            val fName = fileId.substring(0, 10);
+            val extName = "." + FileUtil.extName(fileName);
+            val destFile = "/" + StringUtils.strip(path, "/") + "/" + fName;
             int i = 1;
             var finalFileName = destFile + extName;
             var ossFile = getFile(finalFileName);
@@ -101,8 +116,7 @@ public interface OssBackend {
             throw fe;
         }
         catch (IOException e) {
-            logger.warn("Cannot md5 the file: {} - {}", file.getAbsoluteFile(), e.getMessage());
-            return "/" + StringUtils.strip(path, "/") + "/" + file.getName();
+            return "/" + StringUtils.strip(path, "/") + "/" + fileName;
         }
     }
 

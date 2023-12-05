@@ -23,11 +23,10 @@ import com.apzda.cloud.oss.fs.file.FsFile;
 import com.apzda.cloud.oss.proto.FileInfo;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.springframework.util.DigestUtils;
 import org.springframework.util.FileCopyUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
 
 /**
@@ -66,8 +65,16 @@ public class FsBackend implements OssBackend {
 
     @Override
     public FileInfo uploadFile(File file, String path) throws IOException {
-        try {
-            val destFileName = generatePath(file, config.getPathPatten(), path);
+        return uploadFile(new FileInputStream(file), file.getName(), path);
+    }
+
+    @Override
+    public FileInfo uploadFile(InputStream stream, String fileName, String path) throws IOException {
+        try (val bs = new BufferedInputStream(stream)) {
+            bs.mark(0);
+            val fileId = DigestUtils.md5DigestAsHex(bs);
+            val destFileName = generatePath(fileName, fileId, config.getPathPatten(), path);
+            bs.reset();
             val destFile = new File(rootDir + destFileName);
             val absolutePath = destFile.getParentFile().getAbsolutePath();
             val parentDir = new File(absolutePath);
@@ -75,32 +82,26 @@ public class FsBackend implements OssBackend {
                 if (!parentDir.exists() && !parentDir.mkdirs()) {
                     throw new IOException("Cannot create directory: " + absolutePath);
                 }
-                FileCopyUtils.copy(file, destFile);
+                FileCopyUtils.copy(bs, new FileOutputStream(destFile));
                 val ossFile = getFile(destFileName);
                 val stat = ossFile.stat();
-                return FileInfo.newBuilder(stat).setFilename(file.getName()).build();
+                return FileInfo.newBuilder(stat).setFilename(fileName).build();
             }
             catch (Exception e) {
-                log.error("文件上传失败: {} - {}", file, path, e);
+                log.error("文件上传失败: {} - {}", fileName, path, e);
                 val builder = FileInfo.newBuilder();
                 builder.setBackend("fs");
                 builder.setError(1);
-                builder.setFilename(file.getName());
+                builder.setFilename(fileName);
                 builder.setMessage(e.getMessage());
                 return builder.build();
             }
         }
         catch (FileAlreadyExistsException e) {
-            log.debug("file already exists: {}", file.getAbsolutePath());
             val ossFile = getFile(e.getFile());
             val stat = ossFile.stat();
-            return FileInfo.newBuilder(stat).setFilename(file.getName()).build();
+            return FileInfo.newBuilder(stat).setFilename(fileName).build();
         }
-    }
-
-    @Override
-    public FileInfo uploadFile(InputStream stream, String fileName, String path) throws IOException {
-        return null;
     }
 
     @Override
