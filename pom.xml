@@ -27,6 +27,7 @@
 
     <properties>
         <maven.plugin.validation>NONE</maven.plugin.validation>
+        <gsvc.compiler.version>1.0.5</gsvc.compiler.version>
     </properties>
 
     <issueManagement>
