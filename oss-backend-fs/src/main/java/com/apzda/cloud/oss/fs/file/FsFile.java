@@ -24,6 +24,7 @@ import lombok.val;
 import org.springframework.util.DigestUtils;
 
 import java.io.*;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
 
@@ -79,6 +80,7 @@ public class FsFile implements IOssFile {
             builder.setLength(file.length());
             builder.setExt(FileUtil.extName(file));
             builder.setFilename(file.getName());
+            builder.setContentType(URLConnection.guessContentTypeFromName(file.getName()));
             builder.setFileId(DigestUtils.md5DigestAsHex(new FileInputStream(file)));
             try {
                 FileTime creationTime = (FileTime) Files.getAttribute(file.toPath(), "creationTime");

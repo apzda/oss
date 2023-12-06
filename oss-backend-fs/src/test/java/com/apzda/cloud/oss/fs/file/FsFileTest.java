@@ -32,6 +32,7 @@ class FsFileTest {
         assertThat(stat.getExt()).isEqualTo("xml");
         assertThat(stat.getExist()).isTrue();
         assertThat(stat.getFileId()).isNotBlank();
+        assertThat(stat.getContentType()).isEqualTo("application/xml");
         // when
         val localFile = file.getLocalFile();
         assertThat(localFile).isNotNull();

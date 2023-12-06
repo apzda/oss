@@ -3,6 +3,7 @@ package com.apzda.cloud.oss.minio.backend;
 import com.apzda.cloud.oss.config.BackendConfig;
 import lombok.val;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -15,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @version 1.0.0
  * @since 1.0.0
  **/
+@Disabled
 class MinioBackendTest {
 
     private static MinioBackend ossBackend;

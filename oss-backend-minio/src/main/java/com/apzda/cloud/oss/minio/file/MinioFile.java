@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.*;
+import java.net.URLConnection;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -97,6 +98,7 @@ public class MinioFile implements IOssFile {
             val meta = ossClient.statObject(args);
             val userMeta = meta.userMetadata();
             val fileId = userMeta.getOrDefault("fileid", "");
+            val filename = userMeta.getOrDefault("filename", FileUtil.getName(filePath));
             val builder = FileInfo.newBuilder();
             builder.setError(0);
             builder.setExist(true);
@@ -104,7 +106,8 @@ public class MinioFile implements IOssFile {
             builder.setUrl(theUrl(filePath));
             builder.setLength(meta.size());
             builder.setFileId(fileId);
-            builder.setFilename(userMeta.getOrDefault("filename", FileUtil.getName(filePath)));
+            builder.setFilename(filename);
+            builder.setContentType(URLConnection.guessContentTypeFromName(filename));
             builder.setExt(FileUtil.extName(builder.getFilename()));
             builder.setCreateTime(Long.parseLong(userMeta.getOrDefault("createtime", "0")));
             builder.setBackend("minio");

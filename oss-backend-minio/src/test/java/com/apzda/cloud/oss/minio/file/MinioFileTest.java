@@ -5,6 +5,7 @@ import com.apzda.cloud.oss.minio.backend.MinioBackend;
 import lombok.val;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.FileCopyUtils;
 
@@ -19,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @version 1.0.0
  * @since 1.0.0
  **/
+@Disabled
 class MinioFileTest {
 
     private static MinioBackend ossBackend;

@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.*;
+import java.net.URLConnection;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -87,6 +88,7 @@ public class AliOssFile implements IOssFile {
             val meta = ossClient.getObjectMetadata(config.getBucketName(), objectName);
             val userMeta = meta.getUserMetadata();
             val fileId = userMeta.getOrDefault("fileid", "");
+            val filename = userMeta.getOrDefault("filename", FileUtil.getName(filePath));
             val builder = FileInfo.newBuilder();
             builder.setError(0);
             builder.setExist(true);
@@ -94,7 +96,8 @@ public class AliOssFile implements IOssFile {
             builder.setUrl(theUrl(filePath));
             builder.setLength(meta.getContentLength());
             builder.setFileId(fileId);
-            builder.setFilename(userMeta.getOrDefault("filename", FileUtil.getName(filePath)));
+            builder.setFilename(filename);
+            builder.setContentType(URLConnection.guessContentTypeFromName(filename));
             builder.setExt(FileUtil.extName(builder.getFilename()));
             builder.setCreateTime(Long.parseLong(userMeta.getOrDefault("createtime", "0")));
             builder.setBackend("alioss");
