@@ -19,6 +19,7 @@ package com.apzda.cloud.oss.ali.file;
 import cn.hutool.core.io.FileUtil;
 import com.aliyun.oss.OSSClient;
 import com.apzda.cloud.oss.ali.backend.AliOssBackend;
+import com.apzda.cloud.oss.backend.OssBackend;
 import com.apzda.cloud.oss.config.BackendConfig;
 import com.apzda.cloud.oss.file.IOssFile;
 import com.apzda.cloud.oss.proto.FileInfo;
@@ -41,6 +42,8 @@ public class AliOssFile implements IOssFile {
 
     private final BackendConfig config;
 
+    private final OssBackend backend;
+
     private final OSSClient ossClient;
 
     private final String objectName;
@@ -54,7 +57,7 @@ public class AliOssFile implements IOssFile {
             this.filePath = "/" + path;
             this.objectName = path;
         }
-
+        this.backend = backend;
         this.config = backend.getConfig();
         this.ossClient = backend.getOssClient();
         if (this.ossClient == null) {
@@ -83,7 +86,7 @@ public class AliOssFile implements IOssFile {
         try {
             val meta = ossClient.getObjectMetadata(config.getBucketName(), objectName);
             val userMeta = meta.getUserMetadata();
-            val fileId = userMeta.getOrDefault("fileId", "");
+            val fileId = userMeta.getOrDefault("fileid", "");
             val builder = FileInfo.newBuilder();
             builder.setError(0);
             builder.setExist(true);
@@ -91,9 +94,9 @@ public class AliOssFile implements IOssFile {
             builder.setUrl(theUrl(filePath));
             builder.setLength(meta.getContentLength());
             builder.setFileId(fileId);
-            builder.setFilename(userMeta.getOrDefault("fileName", FileUtil.getName(filePath)));
+            builder.setFilename(userMeta.getOrDefault("filename", FileUtil.getName(filePath)));
             builder.setExt(FileUtil.extName(builder.getFilename()));
-            builder.setCreateTime(Long.parseLong(userMeta.getOrDefault("createTime", "0")));
+            builder.setCreateTime(Long.parseLong(userMeta.getOrDefault("createtime", "0")));
             builder.setBackend("alioss");
             return builder.build();
         }
@@ -104,17 +107,7 @@ public class AliOssFile implements IOssFile {
 
     @Override
     public boolean delete() throws IOException {
-        try {
-            val result = ossClient.deleteObject(config.getBucketName(), objectName);
-            if (result.getResponse().isSuccessful()) {
-                return true;
-            }
-            log.error("Cannot delete file: {} - {}", filePath, result.getResponse().getErrorResponseAsString());
-        }
-        catch (Exception e) {
-            log.error("Cannot delete file: {} - {}", filePath, e.getMessage());
-        }
-        throw new IOException(String.format("Cannot delete file: %s", filePath));
+        return backend.delete(filePath);
     }
 
     private String theUrl(String filePath) {

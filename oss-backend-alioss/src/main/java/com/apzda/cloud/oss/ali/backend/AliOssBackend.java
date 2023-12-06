@@ -28,7 +28,6 @@ import com.apzda.cloud.oss.proto.FileInfo;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.springframework.util.DigestUtils;
 
 import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
@@ -88,21 +87,18 @@ public class AliOssBackend implements OssBackend {
             throw new IOException("AliOss Client is not initialized");
         }
         try (val bs = new BufferedInputStream(stream)) {
-            bs.mark(0);
-            val fileId = DigestUtils.md5DigestAsHex(bs);
+            val fileId = generateFileId(bs);
             val filePath = generatePath(fileName, fileId, config.getPathPatten(), path);
-            bs.reset();
             val meta = new ObjectMetadata();
-            meta.addUserMetadata("fileId", fileId);
-            meta.addUserMetadata("fileName", fileName);
-            meta.addUserMetadata("createTime", String.valueOf(System.currentTimeMillis()));
+            meta.addUserMetadata("fileid", fileId);
+            meta.addUserMetadata("filename", fileName);
+            meta.addUserMetadata("createtime", String.valueOf(System.currentTimeMillis()));
             val result = ossClient.putObject(config.getBucketName(), filePath.substring(1), bs, meta);
             if (result == null) {
                 throw new IOException("Cannot upload file: response is null");
             }
 
             val ossFile = getFile(filePath);
-
             return ossFile.stat();
         }
         catch (FileAlreadyExistsException e) {

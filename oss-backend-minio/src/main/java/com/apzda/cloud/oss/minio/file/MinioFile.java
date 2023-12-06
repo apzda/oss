@@ -16,13 +16,19 @@
  */
 package com.apzda.cloud.oss.minio.file;
 
+import cn.hutool.core.io.FileUtil;
+import com.apzda.cloud.oss.config.BackendConfig;
 import com.apzda.cloud.oss.file.IOssFile;
+import com.apzda.cloud.oss.minio.backend.MinioBackend;
 import com.apzda.cloud.oss.proto.FileInfo;
+import io.minio.GetObjectArgs;
+import io.minio.MinioClient;
+import io.minio.StatObjectArgs;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.FileCopyUtils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -30,23 +36,98 @@ import java.io.InputStream;
  * @since 1.0.0
  **/
 public class MinioFile implements IOssFile {
+
+    private final String filePath;
+
+    private final String objectName;
+
+    private final BackendConfig config;
+
+    private final MinioClient ossClient;
+
+    private final MinioBackend backend;
+
+    public MinioFile(String path, MinioBackend backend) throws IOException {
+        if (path.startsWith("/")) {
+            this.filePath = path;
+            this.objectName = path.substring(1);
+        }
+        else {
+            this.filePath = "/" + path;
+            this.objectName = path;
+        }
+        this.backend = backend;
+        this.config = backend.getConfig();
+        this.ossClient = backend.getOssClient();
+        if (this.ossClient == null) {
+            throw new IOException("MinIO Client is not initialized");
+        }
+    }
+
     @Override
     public File getLocalFile() throws IOException {
-        return null;
+        val tmpDir = config.getTmpDir();
+        val tempFile = FileUtil.createTempFile(new File(tmpDir));
+        FileCopyUtils.copy(getInputStream(), new BufferedOutputStream(new FileOutputStream(tempFile)));
+        return tempFile;
     }
 
     @Override
     public InputStream getInputStream() throws IOException {
-        return null;
+        val bucketName = config.getBucketName();
+        val builder = GetObjectArgs.builder();
+        val arg = builder.bucket(bucketName).object(objectName).build();
+        try {
+            val ossObject = ossClient.getObject(arg);
+            return new BufferedInputStream(ossObject);
+        }
+        catch (IOException ie) {
+            throw ie;
+        }
+        catch (Exception e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
     public FileInfo stat() throws FileNotFoundException {
-        return null;
+        try {
+            val argBuilder = StatObjectArgs.builder();
+            val args = argBuilder.bucket(config.getBucketName()).object(objectName).build();
+            val meta = ossClient.statObject(args);
+            val userMeta = meta.userMetadata();
+            val fileId = userMeta.getOrDefault("fileid", "");
+            val builder = FileInfo.newBuilder();
+            builder.setError(0);
+            builder.setExist(true);
+            builder.setPath(filePath);
+            builder.setUrl(theUrl(filePath));
+            builder.setLength(meta.size());
+            builder.setFileId(fileId);
+            builder.setFilename(userMeta.getOrDefault("filename", FileUtil.getName(filePath)));
+            builder.setExt(FileUtil.extName(builder.getFilename()));
+            builder.setCreateTime(Long.parseLong(userMeta.getOrDefault("createtime", "0")));
+            builder.setBackend("minio");
+            return builder.build();
+        }
+        catch (Exception e) {
+            throw new FileNotFoundException(e.getMessage());
+        }
     }
 
     @Override
     public boolean delete() throws IOException {
-        return false;
+        return backend.delete(filePath);
     }
+
+    private String theUrl(String filePath) {
+        val baseUrl = config.getBaseUrl();
+        if (StringUtils.isBlank(baseUrl)) {
+            val bucketName = config.getBucketName();
+            val endpoint = config.getEndpoint();
+            return endpoint + bucketName + filePath;
+        }
+        return baseUrl + filePath;
+    }
+
 }

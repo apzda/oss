@@ -5,7 +5,9 @@ import com.apzda.cloud.oss.config.BackendConfig;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 
@@ -33,8 +35,9 @@ class FsBackendTest {
         // given
         val file = new File("./pom.xml");
         String path;
-        try {
-            path = backend.generatePath(file, config.getPathPatten(), null);
+        try (val bs = new BufferedInputStream(new FileInputStream(file))) {
+            val fileId = backend.generateFileId(bs);
+            path = backend.generatePath(file.getName(), fileId, config.getPathPatten(), null);
         }
         catch (FileAlreadyExistsException e) {
             path = e.getFile();

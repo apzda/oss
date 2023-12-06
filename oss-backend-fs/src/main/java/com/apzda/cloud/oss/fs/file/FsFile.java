@@ -87,13 +87,11 @@ public class FsFile implements IOssFile {
             catch (IOException e) {
                 builder.setCreateTime(0);
             }
+            return builder.build();
         }
         else {
-            builder.setError(1);
-            builder.setFilename(file.getName());
-            builder.setMessage("File not found");
+            throw new FileNotFoundException("File not found: " + filePath);
         }
-        return builder.build();
     }
 
     @Override

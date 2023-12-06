@@ -16,6 +16,8 @@
  */
 package com.apzda.cloud.oss.config;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -27,11 +29,15 @@ import org.springframework.context.annotation.Configuration;
  **/
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(OssServiceProperties.class)
+@RequiredArgsConstructor
+@Slf4j
 public class OssServiceConfiguration implements InitializingBean {
+
+    private final OssServiceProperties properties;
 
     @Override
     public void afterPropertiesSet() throws Exception {
-
+        log.info("configuration is: {}", properties);
     }
 
 }

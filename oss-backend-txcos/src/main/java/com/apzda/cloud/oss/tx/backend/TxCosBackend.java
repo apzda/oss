@@ -31,7 +31,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.DigestUtils;
 
 import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
@@ -104,12 +103,9 @@ public class TxCosBackend implements OssBackend {
         }
 
         try (val bs = new BufferedInputStream(stream)) {
-            // TODO: 优化计算文件md5值的算法
-            bs.mark(0);
-            val fileId = DigestUtils.md5DigestAsHex(bs);
-
+            val fileId = generateFileId(bs);
             val filePath = generatePath(fileName, fileId, config.getPathPatten(), path);
-            bs.reset();
+
             val meta = new ObjectMetadata();
             meta.addUserMetadata("fileid", fileId);
             meta.addUserMetadata("filename", fileName);

@@ -17,6 +17,8 @@
 package com.apzda.cloud.oss;
 
 import com.apzda.cloud.gsvc.i18n.MessageSourceNameResolver;
+import com.apzda.cloud.oss.config.OssServiceConfiguration;
+import lombok.val;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -35,7 +37,8 @@ public class OssServiceServer {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(OssServiceServer.class, args);
+        val run = SpringApplication.run(OssServiceServer.class, args);
+        val config = run.getBean(OssServiceConfiguration.class);
     }
 
 }

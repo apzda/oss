@@ -64,19 +64,11 @@ public interface OssBackend {
         return true;
     }
 
-    default String generatePath(File file, String pathPatten, String path) throws FileAlreadyExistsException {
-
-        try (var fin = new FileInputStream(file)) {
-            val fileId = DigestUtils.md5DigestAsHex(fin);
-            return generatePath(file.getName(), fileId, pathPatten, path);
-        }
-        catch (FileAlreadyExistsException fe) {
-            throw fe;
-        }
-        catch (IOException e) {
-            logger.warn("Cannot md5 the file: {} - {}", file.getAbsoluteFile(), e.getMessage());
-            return "/" + StringUtils.strip(path, "/") + "/" + file.getName();
-        }
+    default String generateFileId(BufferedInputStream bs) throws IOException {
+        bs.mark(2048);
+        val bytes = bs.readNBytes(2048);
+        bs.reset();
+        return DigestUtils.md5DigestAsHex(bytes);
     }
 
     default String generatePath(String fileName, String fileId, String pathPatten, String path)
@@ -95,7 +87,7 @@ public interface OssBackend {
                 try {
                     val stat = ossFile.stat();
 
-                    if (stat == null || !stat.getExist()) {
+                    if (!stat.getExist()) {
                         break;
                     }
                     if (fileId.equals(stat.getFileId())) {

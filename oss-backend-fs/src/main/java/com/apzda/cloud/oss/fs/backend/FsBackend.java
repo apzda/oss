@@ -23,7 +23,6 @@ import com.apzda.cloud.oss.fs.file.FsFile;
 import com.apzda.cloud.oss.proto.FileInfo;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.springframework.util.DigestUtils;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.*;
@@ -71,11 +70,9 @@ public class FsBackend implements OssBackend {
     @Override
     public FileInfo uploadFile(InputStream stream, String fileName, String path) throws IOException {
         try (val bs = new BufferedInputStream(stream)) {
-            bs.mark(0);
-            val fileId = DigestUtils.md5DigestAsHex(bs);
-            val destFileName = generatePath(fileName, fileId, config.getPathPatten(), path);
-            bs.reset();
-            val destFile = new File(rootDir + destFileName);
+            val fileId = generateFileId(bs);
+            val filePath = generatePath(fileName, fileId, config.getPathPatten(), path);
+            val destFile = new File(rootDir + filePath);
             val absolutePath = destFile.getParentFile().getAbsolutePath();
             val parentDir = new File(absolutePath);
             try {
@@ -83,18 +80,15 @@ public class FsBackend implements OssBackend {
                     throw new IOException("Cannot create directory: " + absolutePath);
                 }
                 FileCopyUtils.copy(bs, new FileOutputStream(destFile));
-                val ossFile = getFile(destFileName);
+                val ossFile = getFile(filePath);
                 val stat = ossFile.stat();
                 return FileInfo.newBuilder(stat).setFilename(fileName).build();
             }
+            catch (IOException ie) {
+                throw ie;
+            }
             catch (Exception e) {
-                log.error("文件上传失败: {} - {}", fileName, path, e);
-                val builder = FileInfo.newBuilder();
-                builder.setBackend("fs");
-                builder.setError(1);
-                builder.setFilename(fileName);
-                builder.setMessage(e.getMessage());
-                return builder.build();
+                throw new IOException(e);
             }
         }
         catch (FileAlreadyExistsException e) {

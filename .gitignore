@@ -4,6 +4,9 @@ target/
 logs/
 !**/src/main/**/logs/
 !**/src/test/**/logs/
+uploads/
+!**/src/main/**/uploads/
+!**/src/test/**/uploads/
 *.versionsBackup
 pom.xml.tag
 pom.xml.releaseBackup

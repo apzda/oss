@@ -17,6 +17,7 @@
 package com.apzda.cloud.oss.tx.file;
 
 import cn.hutool.core.io.FileUtil;
+import com.apzda.cloud.oss.backend.OssBackend;
 import com.apzda.cloud.oss.config.BackendConfig;
 import com.apzda.cloud.oss.file.IOssFile;
 import com.apzda.cloud.oss.proto.FileInfo;
@@ -45,6 +46,8 @@ public class TxOssFile implements IOssFile {
 
     private final String objectName;
 
+    private final OssBackend backend;
+
     public TxOssFile(String path, TxCosBackend backend) throws IOException {
         if (path.startsWith("/")) {
             this.filePath = path;
@@ -54,7 +57,7 @@ public class TxOssFile implements IOssFile {
             this.filePath = "/" + path;
             this.objectName = path;
         }
-
+        this.backend = backend;
         this.config = backend.getConfig();
         this.ossClient = backend.getCosClient();
         if (this.ossClient == null) {
@@ -104,14 +107,7 @@ public class TxOssFile implements IOssFile {
 
     @Override
     public boolean delete() throws IOException {
-        try {
-            ossClient.deleteObject(config.getBucketName(), objectName);
-            return true;
-        }
-        catch (Exception e) {
-            log.error("Cannot delete file: {} - {}", filePath, e.getMessage());
-        }
-        throw new IOException(String.format("Cannot delete file: %s", filePath));
+        return backend.delete(filePath);
     }
 
     private String theUrl(String filePath) {

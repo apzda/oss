@@ -38,7 +38,7 @@ import org.springframework.core.Ordered;
  * @since 1.0.0
  **/
 @Import({ OssClientHelper.class, AliOssBackendConfiguration.class, MinioBackendConfiguration.class,
-        FastDfsBackendConfiguration.class, TxCosBackendConfiguration.class })
+        TxCosBackendConfiguration.class })
 @AutoConfiguration
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @EnableConfigurationProperties(OssConfigProperties.class)
@@ -58,7 +58,7 @@ public class OssClientAutoConfiguration {
 
     private volatile OssBackend ossBackend;
 
-    public OssBackend getBackend() {
+    OssBackend getBackend() {
         if (ossBackend != null) {
             return ossBackend;
         }
