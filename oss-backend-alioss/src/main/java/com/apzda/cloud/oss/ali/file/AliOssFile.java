@@ -87,7 +87,6 @@ public class AliOssFile implements IOssFile {
         try {
             val meta = ossClient.getObjectMetadata(config.getBucketName(), objectName);
             val userMeta = meta.getUserMetadata();
-            val fileId = userMeta.getOrDefault("fileid", "");
             val filename = userMeta.getOrDefault("filename", FileUtil.getName(filePath));
             val builder = FileInfo.newBuilder();
             builder.setError(0);
@@ -95,7 +94,7 @@ public class AliOssFile implements IOssFile {
             builder.setPath(filePath);
             builder.setUrl(theUrl(filePath));
             builder.setLength(meta.getContentLength());
-            builder.setFileId(fileId);
+            builder.setFileId(meta.getContentMD5());
             builder.setFilename(filename);
             builder.setContentType(URLConnection.guessContentTypeFromName(filename));
             builder.setExt(FileUtil.extName(builder.getFilename()));

@@ -46,15 +46,14 @@ class OssFileTest {
         assertThat(localFile.exists()).isTrue();
 
         // when
-        val inputStream = file.getInputStream();
-        // then
-        assertThat(inputStream).isNotNull();
-        // when
-        val string = FileCopyUtils.copyToString(new InputStreamReader(inputStream));
-        // then
-        assertThat(string).contains("oss-client");
-
-        inputStream.close();
+        try (val inputStream = file.getInputStream()) {
+            // then
+            assertThat(inputStream).isNotNull();
+            // when
+            val string = FileCopyUtils.copyToString(new InputStreamReader(inputStream));
+            // then
+            assertThat(string).contains("oss-client");
+        }
     }
 
 }

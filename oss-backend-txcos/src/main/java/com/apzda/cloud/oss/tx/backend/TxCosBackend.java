@@ -33,7 +33,6 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
-import java.nio.file.FileAlreadyExistsException;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -103,11 +102,9 @@ public class TxCosBackend implements OssBackend {
         }
 
         try (val bs = new BufferedInputStream(stream)) {
-            val fileId = generateFileId(bs);
-            val filePath = generatePath(fileName, fileId, config.getPathPatten(), path);
+            val filePath = generatePath(fileName, config.getPathPatten(), path);
 
             val meta = new ObjectMetadata();
-            meta.addUserMetadata("fileid", fileId);
             meta.addUserMetadata("filename", fileName);
             meta.addUserMetadata("createtime", String.valueOf(System.currentTimeMillis()));
 
@@ -117,12 +114,6 @@ public class TxCosBackend implements OssBackend {
                 throw new IOException("Cannot upload file: response is null");
             }
 
-            val ossFile = getFile(filePath);
-
-            return ossFile.stat();
-        }
-        catch (FileAlreadyExistsException e) {
-            val filePath = e.getFile();
             val ossFile = getFile(filePath);
 
             return ossFile.stat();

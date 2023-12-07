@@ -1,6 +1,7 @@
 package com.apzda.cloud.oss.fs.file;
 
 import com.apzda.cloud.oss.config.BackendConfig;
+import com.apzda.cloud.oss.fs.backend.FsBackend;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.FileCopyUtils;
@@ -23,8 +24,9 @@ class FsFileTest {
         val config = new BackendConfig();
         config.setRootDir("./");
         config.setPathPatten("yyyy");
-
-        val file = new FsFile("/pom.xml", config);
+        val backend = new FsBackend();
+        backend.init(config);
+        val file = new FsFile("/pom.xml", backend);
         // when
         val stat = file.stat();
         // then

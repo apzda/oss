@@ -19,6 +19,7 @@ package com.apzda.cloud.oss.fs.file;
 import cn.hutool.core.io.FileUtil;
 import com.apzda.cloud.oss.config.BackendConfig;
 import com.apzda.cloud.oss.file.IOssFile;
+import com.apzda.cloud.oss.fs.backend.FsBackend;
 import com.apzda.cloud.oss.proto.FileInfo;
 import lombok.val;
 import org.springframework.util.DigestUtils;
@@ -45,14 +46,17 @@ public class FsFile implements IOssFile {
 
     protected final String rootDir;
 
-    public FsFile(String filePath, BackendConfig config) {
+    private final FsBackend backend;
+
+    public FsFile(String filePath, FsBackend backend) {
         if (filePath.startsWith("/")) {
             this.filePath = filePath;
         }
         else {
             this.filePath = "/" + filePath;
         }
-        this.config = config;
+        this.config = backend.getConfig();
+        this.backend = backend;
         this.baseUrl = config.getBaseUrl();
         this.rootDir = config.getRootDir();
         this.file = new File(rootDir + filePath);

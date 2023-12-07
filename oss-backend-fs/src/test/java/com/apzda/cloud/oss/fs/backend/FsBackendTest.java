@@ -5,11 +5,8 @@ import com.apzda.cloud.oss.config.BackendConfig;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,20 +31,12 @@ class FsBackendTest {
 
         // given
         val file = new File("./pom.xml");
-        String path;
-        try (val bs = new BufferedInputStream(new FileInputStream(file))) {
-            val fileId = backend.generateFileId(bs);
-            path = backend.generatePath(file.getName(), fileId, config.getPathPatten(), null);
-        }
-        catch (FileAlreadyExistsException e) {
-            path = e.getFile();
-        }
+        val path = backend.generatePath(file.getName(), config.getPathPatten(), null);
         // when
         val fileInfo = backend.uploadFile(file);
         // then
         assertThat(fileInfo).isNotNull();
         assertThat(fileInfo.getExt()).isEqualTo("xml");
-        assertThat(fileInfo.getPath()).isEqualTo(path);
 
         // when
         val ossFile = backend.getFile(path);
@@ -68,7 +57,6 @@ class FsBackendTest {
         // then
         assertThat(fileInfo1).isNotNull();
         assertThat(fileInfo1.getExt()).isEqualTo("xml");
-        assertThat(fileInfo1.getPath()).isEqualTo(path);
         assertThat(fileInfo1.getFileId()).isEqualTo(fileInfo.getFileId());
         assertThat(fileInfo1.getFilename()).isEqualTo("pom.xml");
 

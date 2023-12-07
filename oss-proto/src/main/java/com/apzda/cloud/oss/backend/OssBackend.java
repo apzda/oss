@@ -18,6 +18,8 @@ package com.apzda.cloud.oss.backend;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.ReUtil;
+import cn.hutool.core.util.StrUtil;
 import com.apzda.cloud.oss.config.BackendConfig;
 import com.apzda.cloud.oss.file.IOssFile;
 import com.apzda.cloud.oss.proto.FileInfo;
@@ -27,9 +29,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.DigestUtils;
 
-import java.io.*;
-import java.nio.file.FileAlreadyExistsException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -39,6 +45,8 @@ import java.util.Date;
 public interface OssBackend {
 
     Logger logger = LoggerFactory.getLogger(OssBackend.class);
+
+    Pattern FILE_NAME_INVALID_PATTERN_WIN = Pattern.compile("[\\\\:*?\"<>|\r\n]");
 
     default boolean init(BackendConfig config) {
         return true;
@@ -64,19 +72,16 @@ public interface OssBackend {
         return true;
     }
 
-    default String generateFileId(BufferedInputStream bs) throws IOException {
-        bs.mark(2048);
-        val bytes = bs.readNBytes(2048);
-        bs.reset();
-        return DigestUtils.md5DigestAsHex(bytes);
-    }
-
-    default String generatePath(String fileName, String fileId, String pathPatten, String path)
-            throws FileAlreadyExistsException {
+    default String generatePath(String fileName, String pathPatten, String path) {
         if (StringUtils.isBlank(path)) {
             path = DateUtil.format(new Date(), StringUtils.defaultIfBlank(pathPatten, "yyyy/MM/dd"));
         }
+        else {
+            path = StringUtils.strip(path, "./");
+        }
         try {
+            path = cleanInvalid(path);
+            String fileId = DigestUtils.md5DigestAsHex(fileName.getBytes(StandardCharsets.UTF_8));
             val fName = fileId.substring(0, 10);
             val extName = "." + FileUtil.extName(fileName);
             val destFile = "/" + StringUtils.strip(path, "/") + "/" + fName;
@@ -86,12 +91,8 @@ public interface OssBackend {
             do {
                 try {
                     val stat = ossFile.stat();
-
                     if (!stat.getExist()) {
                         break;
-                    }
-                    if (fileId.equals(stat.getFileId())) {
-                        throw new FileAlreadyExistsException(finalFileName);
                     }
                     finalFileName = destFile + "-" + (i++) + extName;
                     ossFile = getFile(finalFileName);
@@ -104,12 +105,17 @@ public interface OssBackend {
 
             return finalFileName;
         }
-        catch (FileAlreadyExistsException fe) {
-            throw fe;
-        }
         catch (IOException e) {
             return "/" + StringUtils.strip(path, "/") + "/" + fileName;
         }
+    }
+
+    default String cleanInvalid(String path) {
+        return StrUtil.isBlank(path) ? path
+                : ReUtil.delAll(FILE_NAME_INVALID_PATTERN_WIN, path)
+                    .replace("..", "")
+                    .replace("./", "/")
+                    .replaceAll("/{2,}", "/");
     }
 
 }

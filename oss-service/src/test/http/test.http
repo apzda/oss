@@ -1,1 +1,29 @@
-#
+# 文件上传
+POST http://localhost:8081/oss-server/upload HTTP/1.1
+Content-Type: multipart/form-data; boundary=boundar
+
+--boundary
+Content-Disposition: form-data; name="files"; filename="pom.xml"
+Content-Type: application/xml
+
+< ../../../pom.xml
+--boundary
+Content-Disposition: form-data; name="files"; filename="layers.xml"
+Content-Type: application/xml
+
+< ../../../assembly/layers.xml
+--boundary
+Content-Disposition: form-data; name="path"
+
+test/..././../aha/
+--boundary
+
+> {%
+    client.test("Files uploaded successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.errCode === 0, "出错啦: " + response.body.errCode + " != 0");
+        client.assert(response.body.data.files.length === 2, "出错啦: 文件数不为2");
+        client.assert(response.body.data.files[0].error === 0, "出错啦: 文件1上传失败: " + response.body.data.files[0].message);
+        client.assert(response.body.data.files[1].error === 0, "出错啦: 文件2上传失败: " + response.body.data.files[1].message);
+    });
+%}

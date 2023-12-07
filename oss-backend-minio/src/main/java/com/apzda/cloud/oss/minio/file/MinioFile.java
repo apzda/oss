@@ -97,7 +97,6 @@ public class MinioFile implements IOssFile {
             val args = argBuilder.bucket(config.getBucketName()).object(objectName).build();
             val meta = ossClient.statObject(args);
             val userMeta = meta.userMetadata();
-            val fileId = userMeta.getOrDefault("fileid", "");
             val filename = userMeta.getOrDefault("filename", FileUtil.getName(filePath));
             val builder = FileInfo.newBuilder();
             builder.setError(0);
@@ -105,7 +104,7 @@ public class MinioFile implements IOssFile {
             builder.setPath(filePath);
             builder.setUrl(theUrl(filePath));
             builder.setLength(meta.size());
-            builder.setFileId(fileId);
+            builder.setFileId(meta.etag());
             builder.setFilename(filename);
             builder.setContentType(URLConnection.guessContentTypeFromName(filename));
             builder.setExt(FileUtil.extName(builder.getFilename()));
@@ -128,7 +127,7 @@ public class MinioFile implements IOssFile {
         if (StringUtils.isBlank(baseUrl)) {
             val bucketName = config.getBucketName();
             val endpoint = config.getEndpoint();
-            return endpoint + bucketName + filePath;
+            return StringUtils.stripEnd(endpoint, "/") + "/" + bucketName + filePath;
         }
         return baseUrl + filePath;
     }

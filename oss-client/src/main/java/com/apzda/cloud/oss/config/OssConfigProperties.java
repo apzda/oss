@@ -73,6 +73,10 @@ public class OssConfigProperties {
             return "";
         }
         else {
+            baseUrl = StringUtils.strip(baseUrl);
+            if (baseUrl.equals("/")) {
+                return baseUrl;
+            }
             return StringUtils.stripEnd(baseUrl, "/");
         }
     }

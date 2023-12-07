@@ -31,19 +31,24 @@ import org.springframework.lang.NonNull;
 @Configuration(proxyBeanMethods = false)
 public class OssClientHelper implements ApplicationContextAware {
 
-    private static OssBackend ossBackend;
+    private static volatile OssBackend ossBackend;
+
+    private static volatile ApplicationContext context;
 
     @Override
     public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
-        OssClientHelper.ossBackend = applicationContext.getBean(OssClientAutoConfiguration.class).getBackend();
+        context = applicationContext;
     }
 
-    public static OssBackend getOssBackend() {
-        if (OssClientHelper.ossBackend == null) {
+    public synchronized static OssBackend getOssBackend() {
+        if (ossBackend != null) {
+            return ossBackend;
+        }
+        if (context == null) {
             throw new NullPointerException("oss backend not found!");
         }
-
-        return OssClientHelper.ossBackend;
+        ossBackend = context.getBean(OssClientAutoConfiguration.class).getBackend();
+        return ossBackend;
     }
 
 }

@@ -31,7 +31,6 @@ import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
-import java.nio.file.FileAlreadyExistsException;
 import java.util.HashMap;
 
 /**
@@ -100,12 +99,10 @@ public class MinioBackend implements OssBackend {
             throw new IOException("MinIO Client is not initialized");
         }
         try (val bs = new BufferedInputStream(stream)) {
-            val fileId = generateFileId(bs);
-            val filePath = generatePath(fileName, fileId, config.getPathPatten(), path);
+            val filePath = generatePath(fileName, config.getPathPatten(), path);
             val builder = PutObjectArgs.builder();
 
             val meta = new HashMap<String, String>();
-            meta.put("fileid", fileId);
             meta.put("filename", fileName);
             meta.put("createtime", String.valueOf(System.currentTimeMillis()));
 
@@ -118,12 +115,6 @@ public class MinioBackend implements OssBackend {
                 throw new IOException("Cannot upload file: response is null");
             }
 
-            val ossFile = getFile(filePath);
-
-            return ossFile.stat();
-        }
-        catch (FileAlreadyExistsException e) {
-            val filePath = e.getFile();
             val ossFile = getFile(filePath);
 
             return ossFile.stat();

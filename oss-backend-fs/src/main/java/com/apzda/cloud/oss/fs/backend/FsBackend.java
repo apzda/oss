@@ -21,12 +21,12 @@ import com.apzda.cloud.oss.config.BackendConfig;
 import com.apzda.cloud.oss.file.IOssFile;
 import com.apzda.cloud.oss.fs.file.FsFile;
 import com.apzda.cloud.oss.proto.FileInfo;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.*;
-import java.nio.file.FileAlreadyExistsException;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -36,6 +36,7 @@ import java.nio.file.FileAlreadyExistsException;
 @Slf4j
 public class FsBackend implements OssBackend {
 
+    @Getter
     private BackendConfig config;
 
     private String rootDir;
@@ -57,9 +58,9 @@ public class FsBackend implements OssBackend {
     @Override
     public IOssFile getFile(String filePath) throws IOException {
         if (filePath.startsWith("/")) {
-            return new FsFile(filePath, config);
+            return new FsFile(filePath, this);
         }
-        return new FsFile("/" + filePath, config);
+        return new FsFile("/" + filePath, this);
     }
 
     @Override
@@ -70,14 +71,17 @@ public class FsBackend implements OssBackend {
     @Override
     public FileInfo uploadFile(InputStream stream, String fileName, String path) throws IOException {
         try (val bs = new BufferedInputStream(stream)) {
-            val fileId = generateFileId(bs);
-            val filePath = generatePath(fileName, fileId, config.getPathPatten(), path);
+            val filePath = generatePath(fileName, config.getPathPatten(), path);
             val destFile = new File(rootDir + filePath);
             val absolutePath = destFile.getParentFile().getAbsolutePath();
             val parentDir = new File(absolutePath);
             try {
-                if (!parentDir.exists() && !parentDir.mkdirs()) {
-                    throw new IOException("Cannot create directory: " + absolutePath);
+                if (!parentDir.exists()) {
+                    synchronized (this) {
+                        if (!parentDir.exists() && !parentDir.mkdirs()) {
+                            throw new IOException("Cannot create directory: " + absolutePath);
+                        }
+                    }
                 }
                 FileCopyUtils.copy(bs, new FileOutputStream(destFile));
                 val ossFile = getFile(filePath);
@@ -90,11 +94,6 @@ public class FsBackend implements OssBackend {
             catch (Exception e) {
                 throw new IOException(e);
             }
-        }
-        catch (FileAlreadyExistsException e) {
-            val ossFile = getFile(e.getFile());
-            val stat = ossFile.stat();
-            return FileInfo.newBuilder(stat).setFilename(fileName).build();
         }
     }
 

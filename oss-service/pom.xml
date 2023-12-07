@@ -20,6 +20,11 @@
             <groupId>com.apzda.cloud</groupId>
             <artifactId>oss-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.apzda.cloud</groupId>
+            <artifactId>oss-backend-minio</artifactId>
+            <optional>true</optional>
+        </dependency>
         <!-- gsvc -->
         <dependency>
             <groupId>com.apzda.cloud</groupId>

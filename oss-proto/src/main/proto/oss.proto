@@ -13,6 +13,7 @@ option java_outer_classname = "OssProto";
 message UploadReq {
   optional string name = 1;
   repeated gsvc.UploadFile files = 2 [(buf.validate.field).repeated.min_items = 1]; // 文件列表
+  optional string path = 20;
 }
 
 message FileInfo {
@@ -39,47 +40,34 @@ message UploadRes {
   repeated FileInfo files = 3; // 文件列表
 }
 
+message CheckChunkReq {
+  string file_name = 1 [(buf.validate.field).required = true];
+  uint32 total_chunks = 2 [(buf.validate.field).uint32.gte = 1];
+  uint32 chunk_number = 3 [(buf.validate.field).uint32.gte = 1];
+  uint32 chunk_size = 4  [(buf.validate.field).required = true, (buf.validate.field).uint32.gte = 128];
+  uint64 total_size = 5 [(buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0];
+  optional string file_id = 6;
+}
+
 message ChunkUploadReq {
-  string name = 1 [(buf.validate.field).required = true];
-  int32 total_chunk = 2 [(buf.validate.field).uint32.gte = 1];
-  int32 chunk = 3 [(buf.validate.field).uint32.gte = 1];
+  string file_name = 1 [(buf.validate.field).required = true];
+  uint32 total_chunks = 2 [(buf.validate.field).uint32.gte = 1];
+  uint32 chunk_number = 3 [(buf.validate.field).uint32.gte = 1];
+  uint32 chunk_size = 4  [(buf.validate.field).required = true, (buf.validate.field).uint32.gte = 128];
+  uint64 total_size = 5 [(buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0];
+  optional string file_id = 6;
+  optional string path = 7;
   gsvc.UploadFile file = 50 [(buf.validate.field).required = true];
 }
 
-message  ChunkUploadRes{
+message  ChunkUploadRes {
   int32 err_code = 1;
   optional string err_msg = 2;
+  uint32 chunk_number = 3;
   optional FileInfo file = 50;
 }
 
-message DeleteReq {
-  repeated string paths = 1 [(buf.validate.field).repeated.min_items = 1]; // 文件列表
-}
-
-message DeleteRes {
-  int32 err_code = 1;
-  optional string err_msg = 2;
-  repeated string paths = 3;
-}
-
-message QueryReq {
-  repeated string paths = 1 [(buf.validate.field).repeated.min_items = 1]; // 文件列表
-}
-message QueryRes {
-  int32 err_code = 1;
-  optional string err_msg = 2;
-  repeated FileInfo files = 3; // 文件列表
-}
-
 service OssService {
-  /**
-   * 查询
-   */
-  rpc query(QueryReq) returns(QueryRes);
-  /**
-   * 删除
-   */
-  rpc delete(DeleteReq) returns (DeleteRes);
   /**
    * 上传文件
    */
@@ -88,5 +76,9 @@ service OssService {
    * 分片上传
    */
   rpc chunkUpload(ChunkUploadReq) returns(ChunkUploadRes);
+  /**
+   * 查检分片是否存在（用于断点续传）。
+   */
+  rpc checkChunk(CheckChunkReq) returns(ChunkUploadRes);
 }
 

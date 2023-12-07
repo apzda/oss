@@ -30,7 +30,6 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
 import java.io.*;
-import java.nio.file.FileAlreadyExistsException;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -87,10 +86,8 @@ public class AliOssBackend implements OssBackend {
             throw new IOException("AliOss Client is not initialized");
         }
         try (val bs = new BufferedInputStream(stream)) {
-            val fileId = generateFileId(bs);
-            val filePath = generatePath(fileName, fileId, config.getPathPatten(), path);
+            val filePath = generatePath(fileName, config.getPathPatten(), path);
             val meta = new ObjectMetadata();
-            meta.addUserMetadata("fileid", fileId);
             meta.addUserMetadata("filename", fileName);
             meta.addUserMetadata("createtime", String.valueOf(System.currentTimeMillis()));
             val result = ossClient.putObject(config.getBucketName(), filePath.substring(1), bs, meta);
@@ -99,12 +96,6 @@ public class AliOssBackend implements OssBackend {
             }
 
             val ossFile = getFile(filePath);
-            return ossFile.stat();
-        }
-        catch (FileAlreadyExistsException e) {
-            val filePath = e.getFile();
-            val ossFile = getFile(filePath);
-
             return ossFile.stat();
         }
     }

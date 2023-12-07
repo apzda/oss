@@ -20,9 +20,9 @@ import com.apzda.cloud.oss.backend.OssBackend;
 import com.apzda.cloud.oss.config.OssClientHelper;
 import com.apzda.cloud.oss.proto.FileInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -39,7 +39,16 @@ public class OssFile implements IOssFile {
     private FileInfo fileInfo;
 
     public OssFile(String filePath) throws IOException {
+        if (StringUtils.isBlank(filePath)) {
+            throw new IllegalStateException("filePath cannot be blank");
+        }
+
+        if (!filePath.startsWith("/")) {
+            filePath = "/" + filePath;
+        }
+
         OssBackend backend = OssClientHelper.getOssBackend();
+
         ossFile = backend.getFile(filePath);
     }
 
