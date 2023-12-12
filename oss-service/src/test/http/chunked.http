@@ -1,0 +1,184 @@
+### query file
+GET http://localhost:8081/oss-server/query?fileId=abc HTTP/1.1
+
+> {%
+
+    client.test("Files chunk check successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.data.file === undefined, "查到文件了，不应该!")
+    });
+
+%}
+
+### query chunk - 1
+GET http://localhost:8081/oss-server/chunk-upload?chunkSize=7&totalSize=26&totalChunks=3&fileName=abc.txt&fileId=abc&
+    chunkNumber=1 HTTP/1.1
+
+> {%
+
+    client.test("Files chunk check successfully", function () {
+        client.assert(response.status === 204, "Response status is not 204");
+    });
+
+%}
+
+### chunked file upload - 1
+POST http://localhost:8081/oss-server/chunk-upload HTTP/1.1
+Content-Type: multipart/form-data; boundary=boundar
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="abc.txt"
+Content-Type: text/plain
+
+< ./files/1.txt
+--boundary
+Content-Disposition: form-data; name="chunkSize"
+
+7
+--boundary
+Content-Disposition: form-data; name="totalSize"
+
+26
+--boundary
+Content-Disposition: form-data; name="totalChunks"
+
+3
+--boundary
+Content-Disposition: form-data; name="fileId"
+
+abc
+--boundary
+Content-Disposition: form-data; name="fileName"
+
+abc.txt
+--boundary
+Content-Disposition: form-data; name="chunkNumber"
+
+1
+--boundary
+
+> {%
+    client.test("Files uploaded successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.errCode === 0, "出错啦: " + response.body.errCode + " != 0");
+        client.assert(response.body.data.file != undefined, "出错啦: 文件上传失败");
+        client.assert(response.body.data.file.error === 0, "出错啦: 文件上传失败: " + response.body.data.file.message);
+        client.assert(response.body.data.file.length == 7, "出错啦: 文件上传失败: " + response.body.data.file.message);
+    });
+%}
+
+### check chunk - 1
+GET http://localhost:8081/oss-server/chunk-upload?chunkSize=7&totalSize=26&totalChunks=3&fileName=abc.txt&fileId=abc&
+    chunkNumber=1 HTTP/1.1
+
+> {%
+    client.test("Files chunk check successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### chunked file upload - 2
+POST http://localhost:8081/oss-server/chunk-upload HTTP/1.1
+Content-Type: multipart/form-data; boundary=boundar
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="abc.txt"
+Content-Type: text/plain
+
+< ./files/2.txt
+--boundary
+Content-Disposition: form-data; name="chunkSize"
+
+7
+--boundary
+Content-Disposition: form-data; name="totalSize"
+
+26
+--boundary
+Content-Disposition: form-data; name="totalChunks"
+
+3
+--boundary
+Content-Disposition: form-data; name="fileId"
+
+abc
+--boundary
+Content-Disposition: form-data; name="fileName"
+
+abc.txt
+--boundary
+Content-Disposition: form-data; name="chunkNumber"
+
+2
+--boundary
+
+> {%
+    client.test("Files uploaded successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.errCode === 0, "出错啦: " + response.body.errCode + " != 0");
+        client.assert(response.body.data.file != undefined, "出错啦: 文件上传失败");
+        client.assert(response.body.data.file.error === 0, "出错啦: 文件上传失败: " + response.body.data.file.message);
+        client.assert(response.body.data.file.length == 7, "出错啦: 文件上传失败: " + response.body.data.file.message);
+    });
+%}
+
+### chunked file upload - 3
+POST http://localhost:8081/oss-server/chunk-upload HTTP/1.1
+Content-Type: multipart/form-data; boundary=boundar
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="abc.txt"
+Content-Type: text/plain
+
+< ./files/3.txt
+--boundary
+Content-Disposition: form-data; name="chunkSize"
+
+7
+--boundary
+Content-Disposition: form-data; name="totalSize"
+
+26
+--boundary
+Content-Disposition: form-data; name="totalChunks"
+
+3
+--boundary
+Content-Disposition: form-data; name="fileId"
+
+abc
+--boundary
+Content-Disposition: form-data; name="fileName"
+
+abc.txt
+--boundary
+Content-Disposition: form-data; name="chunkNumber"
+
+3
+--boundary
+
+> {%
+    client.test("Files uploaded successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.errCode === 0, "出错啦: " + response.body.errCode + " != 0");
+        client.assert(response.body.data.file != undefined, "出错啦: 文件上传失败");
+        client.assert(response.body.data.file.error === 0, "出错啦: 文件上传失败: " + response.body.data.file.message);
+        client.assert(response.body.data.file.length == 12, "出错啦: 文件上传失败: " + response.body.data.file.message);
+    });
+%}
+
+### delay
+GET https://hub.dummyapis.com/delay?seconds=2
+
+### query result
+GET http://localhost:8081/oss-server/query?fileId=abc HTTP/1.1
+
+> {%
+    client.test("Files chunk check successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+        client.assert(response.body.data.file != undefined, "没查到文件")
+        client.assert(response.body.data.file.error === 0, "出错啦: 文件上传失败: " + response.body.data.file.message);
+        client.assert(response.body.data.file.length == 26, "出错啦: 文件上传失败: " + response.body.data.file.message);
+        client.assert(response.body.data.file.fileId === "c3fcd3d76192e4007dfb496cca67e13b", "出错啦: 文件上传失败: " + response.body.data.file.message);
+    });
+%}

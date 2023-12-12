@@ -16,10 +16,14 @@
  */
 package com.apzda.cloud.oss.config;
 
+import com.apzda.cloud.oss.cache.FileInfoCache;
+import com.apzda.cloud.oss.cache.LocalFileInfoCache;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -38,6 +42,12 @@ public class OssServiceConfiguration implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         log.info("configuration is: {}", properties);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    FileInfoCache fileInfoCache() {
+        return new LocalFileInfoCache();
     }
 
 }

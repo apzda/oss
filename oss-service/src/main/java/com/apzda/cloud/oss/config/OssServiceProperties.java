@@ -22,6 +22,8 @@ import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.util.unit.DataSize;
 import org.springframework.util.unit.DataUnit;
 
+import java.util.List;
+
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
@@ -31,7 +33,19 @@ import org.springframework.util.unit.DataUnit;
 @Data
 public class OssServiceProperties {
 
+    public static final List<String> DEFAULT_FILE_TYPES = List.of("png", "jpeg", "jpg", "zip", "txt", "rar", "7z",
+            "xls", "xlsx", "doc", "docx", "xml", "json");
+
     @DataSizeUnit(DataUnit.MEGABYTES)
-    private DataSize maxUploadSize = DataSize.ofMegabytes(2);
+    private DataSize maxFileSize = DataSize.ofMegabytes(2);
+
+    private List<String> fileTypes = DEFAULT_FILE_TYPES;
+
+    public List<String> getFileTypes() {
+        if (fileTypes == null) {
+            fileTypes = DEFAULT_FILE_TYPES;
+        }
+        return fileTypes;
+    }
 
 }

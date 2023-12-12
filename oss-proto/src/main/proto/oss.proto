@@ -24,12 +24,12 @@ message FileInfo {
   int32 error = 5; // 0: 正常; 其它值出错
   optional string message = 6; // 当error!=0时的错误提示
   optional bool exist = 7; // 文件是否存在，用于查询
-  uint64 length = 8;// 文件长度
+  optional uint64 length = 8;// 文件长度
   optional string file_id = 9;// 文件ID
-  string ext = 10;
-  string filename = 11;
+  optional string ext = 10;
+  optional string filename = 11;
   optional uint64 create_time = 12;
-  string content_type = 13;
+  optional string content_type = 13;
 }
 /**
  * 文件上传结果.
@@ -40,24 +40,15 @@ message UploadRes {
   repeated FileInfo files = 3; // 文件列表
 }
 
-message CheckChunkReq {
-  string file_name = 1 [(buf.validate.field).required = true];
-  uint32 total_chunks = 2 [(buf.validate.field).uint32.gte = 1];
-  uint32 chunk_number = 3 [(buf.validate.field).uint32.gte = 1];
-  uint32 chunk_size = 4  [(buf.validate.field).required = true, (buf.validate.field).uint32.gte = 128];
-  uint64 total_size = 5 [(buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0];
-  optional string file_id = 6;
-}
-
 message ChunkUploadReq {
   string file_name = 1 [(buf.validate.field).required = true];
   uint32 total_chunks = 2 [(buf.validate.field).uint32.gte = 1];
   uint32 chunk_number = 3 [(buf.validate.field).uint32.gte = 1];
-  uint32 chunk_size = 4  [(buf.validate.field).required = true, (buf.validate.field).uint32.gte = 128];
-  uint64 total_size = 5 [(buf.validate.field).required = true, (buf.validate.field).uint64.gt = 0];
+  uint32 chunk_size = 4  [(buf.validate.field).required = true, (buf.validate.field).uint32.gte = 1];
+  uint64 total_size = 5 [(buf.validate.field).required = true, (buf.validate.field).uint64.gte = 1];
   optional string file_id = 6;
   optional string path = 7;
-  gsvc.UploadFile file = 50 [(buf.validate.field).required = true];
+  gsvc.UploadFile file = 50;
 }
 
 message  ChunkUploadRes {
@@ -65,6 +56,10 @@ message  ChunkUploadRes {
   optional string err_msg = 2;
   uint32 chunk_number = 3;
   optional FileInfo file = 50;
+}
+
+message Query {
+  string file_id = 1 [(buf.validate.field).required = true];
 }
 
 service OssService {
@@ -79,6 +74,10 @@ service OssService {
   /**
    * 查检分片是否存在（用于断点续传）。
    */
-  rpc checkChunk(CheckChunkReq) returns(ChunkUploadRes);
+  rpc chunkCheck(ChunkUploadReq) returns(ChunkUploadRes);
+  /**
+   * 查询上传结果
+   */
+  rpc query(Query) returns(ChunkUploadRes);
 }
 

@@ -6,7 +6,7 @@
     <parent>
         <artifactId>apzda-cloud-gsvc-parent</artifactId>
         <groupId>com.apzda.cloud</groupId>
-        <version>1.0.5</version>
+        <version>1.1.0</version>
         <relativePath/>
     </parent>
     <artifactId>oss</artifactId>
@@ -26,7 +26,6 @@
 
     <properties>
         <maven.plugin.validation>NONE</maven.plugin.validation>
-        <gsvc.compiler.version>1.0.5</gsvc.compiler.version>
     </properties>
 
     <issueManagement>
