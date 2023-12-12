@@ -50,4 +50,4 @@ jobs:
           unzip ijhttp.zip
           ./ijhttp/ijhttp --version
       - name: Execute HTTP requests
-        run: ./ijhttp/ijhttp oss-service/src/test/http/test.http
+        run: ./ijhttp/ijhttp oss-service/src/test/http/test.http oss-service/src/test/http/chunked.http
