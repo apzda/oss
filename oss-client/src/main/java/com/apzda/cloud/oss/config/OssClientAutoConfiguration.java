@@ -46,11 +46,7 @@ import org.springframework.core.Ordered;
 @Slf4j
 public class OssClientAutoConfiguration {
 
-    private static final BackendConfig DEFAULT_BACKEND_CONFIG = new BackendConfig() {
-        {
-            setClazz(FsBackend.class);
-        }
-    };
+    private static final BackendConfig DEFAULT_BACKEND_CONFIG = new BackendConfig();
 
     private final OssConfigProperties properties;
 
