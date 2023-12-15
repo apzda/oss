@@ -59,7 +59,6 @@ GET http://localhost:8081/oss-file{{catImgURL}}
 
 > {%
     client.test("Files preview successfully", function () {
-        client.log(response.headers)
         client.assert(response.status === 200, "Response status is not 200");
         client.assert(response.headers.valueOf("Content-Length") == client.global.get("catImgSize"), response.headers.valueOf("Content-Length") + " != " + client.global.get("catImgSize"))
     });
