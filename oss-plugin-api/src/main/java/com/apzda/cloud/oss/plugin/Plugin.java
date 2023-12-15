@@ -14,28 +14,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.oss;
+package com.apzda.cloud.oss.plugin;
 
-import com.apzda.cloud.gsvc.i18n.MessageSourceNameResolver;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
+import com.apzda.cloud.gsvc.ext.GsvcExt;
+import com.apzda.cloud.oss.backend.OssBackend;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-@SpringBootApplication
-public class OssServiceServer {
+public interface Plugin {
 
-    @Bean("oss.MessageSourceNameResolver")
-    MessageSourceNameResolver messageSourceNameResolver() {
-        return () -> "messages-oss";
-    }
+    String PROP_KEEP_B = "keep";
 
-    public static void main(String[] args) {
-        SpringApplication.run(OssServiceServer.class, args);
-    }
+    String PROP_TMPDIR_S = "TMPDIR";
+
+    GsvcExt.UploadFile alter(GsvcExt.UploadFile file, String path, OssBackend ossBackend, PluginProps props)
+            throws Exception;
+
+    boolean supported(String extName);
 
 }

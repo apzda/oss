@@ -16,13 +16,18 @@
  */
 package com.apzda.cloud.oss.config;
 
-import lombok.Data;
+import com.apzda.cloud.oss.plugin.Plugin;
+import com.apzda.cloud.oss.plugin.PluginProps;
+import lombok.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.util.unit.DataSize;
 import org.springframework.util.unit.DataUnit;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -39,13 +44,56 @@ public class OssServiceProperties {
     @DataSizeUnit(DataUnit.MEGABYTES)
     private DataSize maxFileSize = DataSize.ofMegabytes(2);
 
+    private String previewPath;
+
+    private String downloadPath;
+
     private List<String> fileTypes = DEFAULT_FILE_TYPES;
+
+    private List<PluginConfig> plugins = new ArrayList<>();
 
     public List<String> getFileTypes() {
         if (fileTypes == null) {
             fileTypes = DEFAULT_FILE_TYPES;
         }
         return fileTypes;
+    }
+
+    @Data
+    @ToString(exclude = { "pluginClass" })
+    public static class PluginConfig {
+
+        private String id;
+
+        private Class<? extends Plugin> pluginClass;
+
+        private List<String> fileTypes;
+
+        private final Map<String, String> props = new HashMap<>();
+
+        @Setter(AccessLevel.PRIVATE)
+        @Getter(AccessLevel.PRIVATE)
+        private Plugin instance;
+
+        @Setter(AccessLevel.PRIVATE)
+        @Getter(AccessLevel.PRIVATE)
+        private PluginProps pluginProps;
+
+        public Plugin instance() {
+            return instance;
+        }
+
+        public void instance(Plugin instance) {
+            this.instance = instance;
+        }
+
+        public synchronized PluginProps props() {
+            if (pluginProps == null) {
+                pluginProps = new PluginProps(props);
+            }
+            return pluginProps;
+        }
+
     }
 
 }

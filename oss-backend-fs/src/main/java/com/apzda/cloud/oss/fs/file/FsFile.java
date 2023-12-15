@@ -46,8 +46,6 @@ public class FsFile implements IOssFile {
 
     protected final String rootDir;
 
-    private final FsBackend backend;
-
     public FsFile(String filePath, FsBackend backend) {
         if (filePath.startsWith("/")) {
             this.filePath = filePath;
@@ -56,7 +54,6 @@ public class FsFile implements IOssFile {
             this.filePath = "/" + filePath;
         }
         this.config = backend.getConfig();
-        this.backend = backend;
         this.baseUrl = config.getBaseUrl();
         this.rootDir = config.getRootDir();
         this.file = new File(rootDir + filePath);

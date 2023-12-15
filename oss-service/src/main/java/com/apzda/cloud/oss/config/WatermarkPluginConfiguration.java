@@ -14,13 +14,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.oss.core;
+package com.apzda.cloud.oss.config;
+
+import com.apzda.cloud.oss.plugin.watermark.WatermarkPlugin;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-public interface Plugin {
+@Configuration(proxyBeanMethods = false)
+@ConditionalOnClass(WatermarkPlugin.class)
+class WatermarkPluginConfiguration {
+
+    @Bean
+    WatermarkPlugin watermarkOssPlugin() {
+        return new WatermarkPlugin();
+    }
 
 }

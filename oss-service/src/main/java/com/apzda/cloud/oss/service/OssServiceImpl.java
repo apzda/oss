@@ -17,6 +17,7 @@
 package com.apzda.cloud.oss.service;
 
 import com.apzda.cloud.gsvc.ext.GsvcExt;
+import com.apzda.cloud.oss.backend.OssBackend;
 import com.apzda.cloud.oss.cache.FileInfoCache;
 import com.apzda.cloud.oss.config.OssClientHelper;
 import com.apzda.cloud.oss.config.OssConfigProperties;
@@ -27,10 +28,12 @@ import com.apzda.cloud.oss.exception.FileSizeNotAllowedException;
 import com.apzda.cloud.oss.proto.*;
 import com.apzda.cloud.oss.resumable.ResumableInfo;
 import com.apzda.cloud.oss.resumable.ResumableStorage;
+import com.google.common.base.Splitter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.unit.DataSize;
@@ -38,6 +41,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -48,7 +52,7 @@ import java.util.concurrent.CompletableFuture;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class OssServiceImpl implements OssService {
+public class OssServiceImpl implements OssService, InitializingBean {
 
     private final OssConfigProperties properties;
 
@@ -56,8 +60,20 @@ public class OssServiceImpl implements OssService {
 
     private final FileInfoCache fileInfoCache;
 
+    private List<OssServiceProperties.PluginConfig> plugins;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        plugins = serviceProperties.getPlugins();
+    }
+
     @Override
     public UploadRes upload(UploadReq request) {
+        if (request.hasFile()) {
+            val newReq = UploadReq.newBuilder(request);
+            newReq.addFiles(request.getFile());
+            request = newReq.build();
+        }
         val ossBackend = OssClientHelper.getOssBackend();
         val builder = UploadRes.newBuilder();
         val fileCount = request.getFilesCount();
@@ -65,17 +81,19 @@ public class OssServiceImpl implements OssService {
         log.debug("Start dealing file upload: fileCount = {}, path = {}, backend = {}", fileCount, path,
                 properties.getBackend());
         if (fileCount > 0) {
+            val finalReq = request;
             val futures = new ArrayList<CompletableFuture<FileInfo>>();
+            val disables = Splitter.on(",").omitEmptyStrings().trimResults().splitToList(request.getDisables());
             for (int i = 0; i < fileCount; i++) {
-                GsvcExt.UploadFile file = request.getFiles(i);
                 val index = i;
                 CompletableFuture<FileInfo> uploaded = CompletableFuture.supplyAsync(() -> {
+                    GsvcExt.UploadFile file = finalReq.getFiles(index);
                     FileInfo.Builder fileInfo;
                     val filename = file.getFilename();
                     try {
-                        String tmpFilePath = file.getFile();
                         checkFileValid(file);
-                        applyPlugins(file);
+                        file = applyPlugins(file, path, ossBackend, disables);
+                        val tmpFilePath = file.getFile();
                         val result = ossBackend.uploadFile(new FileInputStream(tmpFilePath), filename, path);
                         fileInfo = FileInfo.newBuilder(result);
                         log.debug("Upload success: fileName = {}, path = {}, size = {}", filename, fileInfo.getPath(),
@@ -86,6 +104,13 @@ public class OssServiceImpl implements OssService {
                         fileInfo.setError(1);
                         fileInfo.setMessage(e.getMessage());
                         log.error("Upload fail: fileName = {}, error = {}", filename, e.getMessage());
+                    }
+                    finally {
+                        val f = new File(file.getFile());
+                        if (f.exists()) {
+                            val deleted = f.delete();
+                            log.debug("Delete the original file: {} - {}", deleted, f);
+                        }
                     }
                     fileInfo.setFilename(filename);
                     fileInfo.setIndex(index);
@@ -170,24 +195,42 @@ public class OssServiceImpl implements OssService {
                         log.debug("All chunks are uploaded, now save it to backend[{}]: {}", properties.getBackend(),
                                 info);
                     }
-                    val ossBackend = OssClientHelper.getOssBackend();
-                    try (val fileStream = new FileInputStream(new File(info.resumableFilePath))) {
-                        val fileInfo = ossBackend.uploadFile(fileStream, info.resumableFilename, path);
-                        fileInfoCache.setFileInfo(info.resumableIdentifier, fileInfo);
-                        if (log.isDebugEnabled()) {
-                            log.debug("File saved to backend[{}]: {}", properties.getBackend(), info);
+
+                    try {
+                        val ossBackend = OssClientHelper.getOssBackend();
+                        val disables = Splitter.on(",")
+                            .omitEmptyStrings()
+                            .trimResults()
+                            .splitToList(request.getDisables());
+                        val fBuilder = GsvcExt.UploadFile.newBuilder(file);
+                        fBuilder.setFile(info.resumableFilePath);
+                        fBuilder.setSize(info.resumableTotalSize);
+                        val uploadFile = applyPlugins(fBuilder.build(), path, ossBackend, disables);
+                        info.resumableFilePath = uploadFile.getFile();
+                        try (val fileStream = new FileInputStream(info.resumableFilePath)) {
+                            val fileInfo = ossBackend.uploadFile(fileStream, info.resumableFilename, path);
+                            fileInfoCache.setFileInfo(info.resumableIdentifier, fileInfo);
+                            if (log.isDebugEnabled()) {
+                                log.debug("File saved to backend[{}]: {}", properties.getBackend(), info);
+                            }
                         }
                     }
-                    catch (IOException e) {
+                    catch (Exception e) {
                         log.error("Cannot save file to backend: {} - {}", info, e.getMessage());
                         val fileInfo = FileInfo.newBuilder();
                         fileInfo.setError(1);
                         fileInfo.setMessage(e.getMessage());
                         fileInfoCache.setFileInfo(info.resumableIdentifier, fileInfo.build());
                     }
+                    finally {
+                        val f = new File(info.resumableFilePath);
+                        if (f.exists()) {
+                            val deleted = f.delete();
+                            log.debug("Delete the original file: {} - {}", deleted, f);
+                        }
+                    }
                 });
             }
-
             return builder.build();
         }
         catch (FileNotFoundException fne) {
@@ -231,29 +274,50 @@ public class OssServiceImpl implements OssService {
     }
 
     private void checkFileValid(GsvcExt.UploadFile file) {
-        val error = file.getError();
-        if (StringUtils.isNotBlank(error)) {
-            throw new IllegalStateException(error);
+        try {
+            val error = file.getError();
+            if (StringUtils.isNotBlank(error)) {
+                throw new IllegalStateException(error);
+            }
+            val size = file.getSize();
+            if (size == 0) {
+                log.warn("The size of {} is 0", file.getFilename());
+                throw new FileSizeNotAllowedException("The size is 0");
+            }
+            if (size > serviceProperties.getMaxFileSize().toBytes()) {
+                log.warn("The size of {} is larger than {}", file.getFilename(), serviceProperties.getMaxFileSize());
+                throw new FileSizeNotAllowedException("The size is larger than " + serviceProperties.getMaxFileSize());
+            }
+            val fileTypes = serviceProperties.getFileTypes();
+            val ext = file.getExt();
+            if (StringUtils.isBlank(ext) || !fileTypes.contains(ext.toLowerCase())) {
+                log.warn("The extension of {} is now allowed: {}", file.getFilename(), ext);
+                throw new FileExtNameNotAllowedException("The extension is now allowed: " + ext);
+            }
         }
-        val size = file.getSize();
-        if (size == 0) {
-            log.warn("The size of {} is 0", file.getFilename());
-            throw new FileSizeNotAllowedException("The size is 0");
-        }
-        if (size > serviceProperties.getMaxFileSize().toBytes()) {
-            log.warn("The size of {} is larger than {}", file.getFilename(), serviceProperties.getMaxFileSize());
-            throw new FileSizeNotAllowedException("The size is larger than " + serviceProperties.getMaxFileSize());
-        }
-        val fileTypes = serviceProperties.getFileTypes();
-        val ext = file.getExt();
-        if (StringUtils.isBlank(ext) || !fileTypes.contains(ext.toLowerCase())) {
-            log.warn("The extension of {} is now allowed: {}", file.getFilename(), ext);
-            throw new FileExtNameNotAllowedException("The extension is now allowed: " + ext);
+        catch (Exception e) {
+            val f = new File(file.getFile());
+            if (f.exists()) {
+                val deleted = f.delete();
+                log.debug("Delete the original file: {} - {}", deleted, f);
+            }
+            throw e;
         }
     }
 
-    private void applyPlugins(GsvcExt.UploadFile file) {
+    private GsvcExt.UploadFile applyPlugins(final GsvcExt.UploadFile file, final String path,
+            final OssBackend ossBackend, List<String> disabledPlugins) throws Exception {
 
+        val ext = file.getExt();
+        GsvcExt.UploadFile alteredFile = file;
+        log.debug("Disabled plugins: {}", disabledPlugins);
+        for (OssServiceProperties.PluginConfig plugin : plugins) {
+            if (!disabledPlugins.contains(plugin.getId()) && plugin.getFileTypes().contains(ext)
+                    && plugin.instance().supported(ext)) {
+                alteredFile = plugin.instance().alter(alteredFile, path, ossBackend, plugin.props());
+            }
+        }
+        return alteredFile;
     }
 
 }

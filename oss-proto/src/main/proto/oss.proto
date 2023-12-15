@@ -9,13 +9,6 @@ option java_package = "com.apzda.cloud.oss.proto";
 option java_multiple_files = true;
 option java_outer_classname = "OssProto";
 
-
-message UploadReq {
-  optional string name = 1;
-  repeated gsvc.UploadFile files = 2 [(buf.validate.field).repeated.min_items = 1]; // 文件列表
-  optional string path = 20;
-}
-
 message FileInfo {
   uint32 index = 1; // 第几个文件
   optional string url = 2; // 文件的URL
@@ -31,6 +24,15 @@ message FileInfo {
   optional uint64 create_time = 12;
   optional string content_type = 13;
 }
+
+message UploadReq {
+  optional string name = 1;
+  repeated gsvc.UploadFile files = 2 [(buf.validate.field).repeated.min_items = 0]; // 文件列表
+  optional gsvc.UploadFile file = 3;
+  optional string disables = 4;
+  optional string path = 20;
+}
+
 /**
  * 文件上传结果.
  */
@@ -48,6 +50,7 @@ message ChunkUploadReq {
   uint64 total_size = 5 [(buf.validate.field).required = true, (buf.validate.field).uint64.gte = 1];
   optional string file_id = 6;
   optional string path = 7;
+  optional string disables = 8;
   gsvc.UploadFile file = 50;
 }
 

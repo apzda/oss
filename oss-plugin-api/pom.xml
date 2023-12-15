@@ -10,5 +10,11 @@
     </parent>
 
     <artifactId>oss-plugin-api</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.apzda.cloud</groupId>
+            <artifactId>oss-proto</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

@@ -68,9 +68,19 @@ public class MinioFile implements IOssFile {
     @Override
     public File getLocalFile() throws IOException {
         val tmpDir = config.getTmpDir();
-        val tempFile = FileUtil.createTempFile(new File(tmpDir));
-        FileCopyUtils.copy(getInputStream(), new BufferedOutputStream(new FileOutputStream(tempFile)));
-        return tempFile;
+        val stat = stat();
+        val localFileName = tmpDir + stat.getFileId() + "." + stat.getExt();
+        var localFile = new File(localFileName);
+        if (localFile.exists()) {
+            return localFile;
+        }
+        synchronized (filePath) {
+            if (localFile.exists()) {
+                return localFile;
+            }
+            FileCopyUtils.copy(getInputStream(), new BufferedOutputStream(new FileOutputStream(localFile)));
+            return localFile;
+        }
     }
 
     @Override
@@ -91,7 +101,7 @@ public class MinioFile implements IOssFile {
     }
 
     @Override
-    public FileInfo stat() throws FileNotFoundException {
+    public FileInfo stat() throws IOException {
         try {
             val argBuilder = StatObjectArgs.builder();
             val args = argBuilder.bucket(config.getBucketName()).object(objectName).build();
@@ -113,7 +123,7 @@ public class MinioFile implements IOssFile {
             return builder.build();
         }
         catch (Exception e) {
-            throw new FileNotFoundException(e.getMessage());
+            throw new FileNotFoundException(filePath + ": " + e.getMessage());
         }
     }
 

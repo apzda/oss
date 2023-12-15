@@ -96,7 +96,7 @@ public class OssClientAutoConfiguration {
                 log.warn("Cannot initialize '{}' OssBackend: {}", backend, config);
             }
 
-            log.debug("oss backend initialized: {}", config);
+            log.trace("oss backend initialized: {}", config);
         }
         return ossBackend;
     }

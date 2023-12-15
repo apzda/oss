@@ -14,28 +14,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.oss;
+package com.apzda.cloud.oss.config;
 
-import com.apzda.cloud.gsvc.i18n.MessageSourceNameResolver;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import com.apzda.cloud.oss.plugin.resize.ResizePlugin;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-@SpringBootApplication
-public class OssServiceServer {
+@Configuration(proxyBeanMethods = false)
+@ConditionalOnClass(ResizePlugin.class)
+class ResizePluginConfiguration {
 
-    @Bean("oss.MessageSourceNameResolver")
-    MessageSourceNameResolver messageSourceNameResolver() {
-        return () -> "messages-oss";
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(OssServiceServer.class, args);
+    @Bean
+    ResizePlugin resizeOssPlugin() {
+        return new ResizePlugin();
     }
 
 }

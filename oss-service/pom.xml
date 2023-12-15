@@ -22,6 +22,16 @@
         </dependency>
         <dependency>
             <groupId>com.apzda.cloud</groupId>
+            <artifactId>oss-plugin-resize</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.apzda.cloud</groupId>
+            <artifactId>oss-plugin-watermark</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.apzda.cloud</groupId>
             <artifactId>oss-backend-minio</artifactId>
             <optional>true</optional>
         </dependency>
@@ -34,6 +44,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

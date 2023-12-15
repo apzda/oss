@@ -22,6 +22,8 @@
         <module>oss-backend-minio</module>
         <module>oss-backend-txcos</module>
         <module>oss-plugin-api</module>
+        <module>oss-plugin-resize</module>
+        <module>oss-plugin-watermark</module>
     </modules>
 
     <properties>
@@ -109,6 +111,16 @@
             <dependency>
                 <groupId>com.apzda.cloud</groupId>
                 <artifactId>oss-plugin-api</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.apzda.cloud</groupId>
+                <artifactId>oss-plugin-resize</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.apzda.cloud</groupId>
+                <artifactId>oss-plugin-watermark</artifactId>
                 <version>1.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>

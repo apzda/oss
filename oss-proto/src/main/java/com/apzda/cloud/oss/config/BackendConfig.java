@@ -22,6 +22,7 @@ import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.convert.DurationUnit;
 
+import java.io.File;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -72,7 +73,8 @@ public class BackendConfig {
     }
 
     public String getTmpDir() {
-        return StringUtils.defaultIfBlank(tmpDir, FileUtil.getTmpDirPath());
+        return StringUtils.stripEnd(StringUtils.defaultIfBlank(tmpDir, FileUtil.getTmpDirPath()), File.separator)
+                + File.separator;
     }
 
     public String getBaseUrl() {
