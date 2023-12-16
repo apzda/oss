@@ -16,6 +16,7 @@
  */
 package com.apzda.cloud.oss.config;
 
+import com.apzda.cloud.gsvc.i18n.MessageSourceNameResolver;
 import com.apzda.cloud.oss.cache.FileInfoCache;
 import com.apzda.cloud.oss.cache.LocalFileInfoCache;
 import com.apzda.cloud.oss.func.DownloadHandlerFunction;
@@ -47,7 +48,7 @@ import org.springframework.web.servlet.function.ServerResponse;
  **/
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(OssServiceProperties.class)
-@Import({ ResizePluginConfiguration.class })
+@Import({ ResizePluginConfiguration.class, WatermarkPluginConfiguration.class })
 @RequiredArgsConstructor
 @Slf4j
 public class OssServiceConfiguration implements InitializingBean {
@@ -76,6 +77,11 @@ public class OssServiceConfiguration implements InitializingBean {
             log.debug("Oss Plugin installed: {}", plugin);
             plugin.getProps().put(Plugin.PROP_TMPDIR_S, ossConfigProperties.getTmpDir());
         }
+    }
+
+    @Bean("oss.MessageSourceNameResolver")
+    MessageSourceNameResolver messageSourceNameResolver() {
+        return () -> "messages-oss";
     }
 
     @Bean

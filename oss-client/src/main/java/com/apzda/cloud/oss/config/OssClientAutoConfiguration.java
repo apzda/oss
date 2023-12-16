@@ -18,6 +18,7 @@ package com.apzda.cloud.oss.config;
 
 import com.apzda.cloud.oss.backend.OssBackend;
 import com.apzda.cloud.oss.fs.backend.FsBackend;
+import com.apzda.cloud.oss.proto.OssServiceGsvc;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -38,7 +39,7 @@ import org.springframework.core.Ordered;
  * @since 1.0.0
  **/
 @Import({ OssClientHelper.class, AliOssBackendConfiguration.class, MinioBackendConfiguration.class,
-        TxCosBackendConfiguration.class })
+        TxCosBackendConfiguration.class, OssServiceGsvc.class })
 @AutoConfiguration
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @EnableConfigurationProperties(OssConfigProperties.class)

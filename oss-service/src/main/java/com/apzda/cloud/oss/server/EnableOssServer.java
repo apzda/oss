@@ -14,28 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.apzda.cloud.oss;
+package com.apzda.cloud.oss.server;
 
-import com.apzda.cloud.gsvc.i18n.MessageSourceNameResolver;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
+import com.apzda.cloud.oss.config.OssServiceConfiguration;
+import com.apzda.cloud.oss.proto.OssServiceGsvc;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+
+import java.lang.annotation.*;
 
 /**
  * @author fengz (windywany@gmail.com)
  * @version 1.0.0
  * @since 1.0.0
  **/
-@SpringBootApplication
-public class OssServiceServer {
 
-    @Bean("oss.MessageSourceNameResolver")
-    MessageSourceNameResolver messageSourceNameResolver() {
-        return () -> "messages-oss";
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(OssServiceServer.class, args);
-    }
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Import({ OssServiceGsvc.class, OssServiceConfiguration.class })
+@PropertySource("classpath:apzda.oss.service.properties")
+@ComponentScan(basePackages = { "com.apzda.cloud.oss.service" })
+@EnableMethodSecurity
+@Documented
+public @interface EnableOssServer {
 
 }
