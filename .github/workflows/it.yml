@@ -42,7 +42,7 @@ jobs:
           working-directory: oss-service
           wait-for: 2m
           tail: true
-          run: java -jar target/oss-service-fat.jar &
+          run: java -jar target/oss-service-fat.jar --spring.profiles.active=oss-dev &
           wait-on: http-get://localhost:${{ env.SERVER_PORT_NO }}/actuator/health
       - name: Download ijhttp tools
         run: |-
