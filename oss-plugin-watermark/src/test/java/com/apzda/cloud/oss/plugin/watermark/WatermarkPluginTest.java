@@ -1,10 +1,10 @@
 package com.apzda.cloud.oss.plugin.watermark;
 
 import cn.hutool.core.io.FileUtil;
+import com.apzda.cloud.gsvc.config.Props;
 import com.apzda.cloud.gsvc.ext.GsvcExt;
 import com.apzda.cloud.oss.config.BackendConfig;
 import com.apzda.cloud.oss.fs.backend.FsBackend;
-import com.apzda.cloud.oss.plugin.PluginProps;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +34,7 @@ class WatermarkPluginTest {
         val file = builder.build();
 
         // when
-        val altered = watermarkPlugin.alter(file, null, ossBackend, new PluginProps(new HashMap<>() {
+        val altered = watermarkPlugin.alter(file, null, ossBackend, new Props(new HashMap<>() {
             {
                 put(WatermarkPlugin.PROP_WATERMARK_S, "/watermark.png");
                 put(WatermarkPlugin.PROP_TMPDIR_S, FileUtil.getTmpDirPath());

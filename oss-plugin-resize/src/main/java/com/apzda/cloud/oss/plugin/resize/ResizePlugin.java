@@ -17,10 +17,10 @@
 package com.apzda.cloud.oss.plugin.resize;
 
 import cn.hutool.core.io.FileUtil;
+import com.apzda.cloud.gsvc.config.Props;
 import com.apzda.cloud.gsvc.ext.GsvcExt;
 import com.apzda.cloud.oss.backend.OssBackend;
 import com.apzda.cloud.oss.plugin.Plugin;
-import com.apzda.cloud.oss.plugin.PluginProps;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
@@ -47,7 +47,7 @@ public class ResizePlugin implements Plugin {
     public static final String PROP_HEIGHT_I = "height";
 
     @Override
-    public GsvcExt.UploadFile alter(GsvcExt.UploadFile file, String path, OssBackend ossBackend, PluginProps props)
+    public GsvcExt.UploadFile alter(GsvcExt.UploadFile file, String path, OssBackend ossBackend, Props props)
             throws Exception {
         val ext = file.getExt();
         if (!supported(ext)) {
@@ -113,7 +113,7 @@ public class ResizePlugin implements Plugin {
 
         val builder = GsvcExt.UploadFile.newBuilder(file);
         builder.setFile(tmpImg);
-        if (!props.getBoolean(PROP_KEEP_B, false)) {
+        if (!props.getBool(PROP_KEEP_B, false)) {
             if (FileUtil.del(originFile)) {
                 log.trace("Origin file deleted: {}", originFile);
             }

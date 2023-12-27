@@ -16,8 +16,8 @@
  */
 package com.apzda.cloud.oss.config;
 
+import com.apzda.cloud.gsvc.config.Props;
 import com.apzda.cloud.oss.plugin.Plugin;
-import com.apzda.cloud.oss.plugin.PluginProps;
 import lombok.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.convert.DataSizeUnit;
@@ -77,7 +77,7 @@ public class OssServiceProperties {
 
         @Setter(AccessLevel.PRIVATE)
         @Getter(AccessLevel.PRIVATE)
-        private PluginProps pluginProps;
+        private Props pluginProps;
 
         public Plugin instance() {
             return instance;
@@ -87,9 +87,9 @@ public class OssServiceProperties {
             this.instance = instance;
         }
 
-        public synchronized PluginProps props() {
+        public synchronized Props props() {
             if (pluginProps == null) {
-                pluginProps = new PluginProps(props);
+                pluginProps = new Props(props);
             }
             return pluginProps;
         }

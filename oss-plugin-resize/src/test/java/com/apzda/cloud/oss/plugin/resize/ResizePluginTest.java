@@ -1,8 +1,8 @@
 package com.apzda.cloud.oss.plugin.resize;
 
 import cn.hutool.core.io.FileUtil;
+import com.apzda.cloud.gsvc.config.Props;
 import com.apzda.cloud.gsvc.ext.GsvcExt;
-import com.apzda.cloud.oss.plugin.PluginProps;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +28,7 @@ class ResizePluginTest {
         builder.setExt("jpeg");
         val file = builder.build();
         // when
-        val altered = resizePlugin.alter(file, "/", null, new PluginProps(new HashMap<>() {
+        val altered = resizePlugin.alter(file, "/", null, new Props(new HashMap<>() {
             {
                 put(ResizePlugin.PROP_WIDTH_I, "120");
                 put(ResizePlugin.PROP_TMPDIR_S, FileUtil.getTmpDirPath());

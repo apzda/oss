@@ -16,6 +16,7 @@
  */
 package com.apzda.cloud.oss.plugin;
 
+import com.apzda.cloud.gsvc.config.Props;
 import com.apzda.cloud.gsvc.ext.GsvcExt;
 import com.apzda.cloud.oss.backend.OssBackend;
 
@@ -30,8 +31,7 @@ public interface Plugin {
 
     String PROP_TMPDIR_S = "TMPDIR";
 
-    GsvcExt.UploadFile alter(GsvcExt.UploadFile file, String path, OssBackend ossBackend, PluginProps props)
-            throws Exception;
+    GsvcExt.UploadFile alter(GsvcExt.UploadFile file, String path, OssBackend ossBackend, Props props) throws Exception;
 
     boolean supported(String extName);
 
