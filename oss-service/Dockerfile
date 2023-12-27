@@ -6,7 +6,7 @@ COPY ${SERVICE_JAR} /opt/app/application.jar
 
 RUN java -Djarmode=layertools -jar application.jar extract
 
-FROM wulaphp/openjdk:11
+FROM wulaphp/openjdk:17
 
 ARG SERVICE_NAME
 ARG SERVICE_VER
