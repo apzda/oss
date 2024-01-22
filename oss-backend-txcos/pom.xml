@@ -10,7 +10,7 @@
     <artifactId>oss-backend-txcos</artifactId>
 
     <properties>
-        <cos_api.version>5.6.191</cos_api.version>
+        <cos_api.version>5.6.199</cos_api.version>
     </properties>
     <dependencies>
         <dependency>
