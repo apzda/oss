@@ -68,7 +68,14 @@ public class OssServiceConfiguration implements InitializingBean {
                 plugin.instance(BeanUtils.instantiateClass(clazz));
             }
             else if (StringUtils.isNotBlank(plugin.getId())) {
-                plugin.instance(applicationContext.getBean(plugin.getId() + "OssPlugin", Plugin.class));
+                val pluginBeanName = plugin.getId() + "OssPlugin";
+                if (applicationContext.containsBean(pluginBeanName)) {
+                    plugin.instance(applicationContext.getBean(pluginBeanName, Plugin.class));
+                }
+                else {
+                    log.warn("Oss Plugin Bean: '{}' is not found!", pluginBeanName);
+                    continue;
+                }
             }
             else {
                 throw new IllegalStateException(

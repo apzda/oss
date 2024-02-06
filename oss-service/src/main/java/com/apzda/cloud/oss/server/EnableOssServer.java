@@ -21,7 +21,6 @@ import com.apzda.cloud.oss.proto.OssServiceGsvc;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 import java.lang.annotation.*;
 
@@ -36,7 +35,6 @@ import java.lang.annotation.*;
 @Import({ OssServiceGsvc.class, OssServiceConfiguration.class })
 @PropertySource("classpath:apzda.oss.service.properties")
 @ComponentScan(basePackages = { "com.apzda.cloud.oss.service" })
-@EnableMethodSecurity
 @Documented
 public @interface EnableOssServer {
 

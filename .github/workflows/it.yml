@@ -39,10 +39,10 @@ jobs:
       - name: Run AllInOne Application
         uses: JarvusInnovations/background-action@v1
         with:
-          working-directory: oss-service
+          working-directory: oss-server
           wait-for: 2m
           tail: true
-          run: java -jar target/oss-service-fat.jar --spring.profiles.active=oss-dev &
+          run: java -jar target/oss-server-fat.jar --spring.profiles.active=oss-dev &
           wait-on: http-get://localhost:${{ env.SERVER_PORT_NO }}/actuator/health
       - name: Download ijhttp tools
         run: |-
@@ -50,4 +50,4 @@ jobs:
           unzip ijhttp.zip
           ./ijhttp/ijhttp --version
       - name: Execute HTTP requests
-        run: ./ijhttp/ijhttp oss-service/src/test/http/test.http oss-service/src/test/http/chunked.http
+        run: ./ijhttp/ijhttp oss-server/src/test/http/test.http oss-server/src/test/http/chunked.http

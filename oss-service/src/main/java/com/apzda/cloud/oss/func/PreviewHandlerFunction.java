@@ -18,8 +18,8 @@ package com.apzda.cloud.oss.func;
 
 import com.apzda.cloud.oss.config.OssClientHelper;
 import lombok.val;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.http.MediaType;
+import org.springframework.lang.NonNull;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.servlet.function.HandlerFunction;
 import org.springframework.web.servlet.function.ServerRequest;
@@ -38,9 +38,9 @@ public class PreviewHandlerFunction implements HandlerFunction<ServerResponse> {
         this.pathPrefix = pathPrefix;
     }
 
-    @NotNull
+    @NonNull
     @Override
-    public ServerResponse handle(@NotNull ServerRequest request) throws Exception {
+    public ServerResponse handle(@NonNull ServerRequest request) throws Exception {
         try {
             val file = request.path().replaceFirst(pathPrefix, "/");
             val ossBackend = OssClientHelper.getOssBackend();

@@ -21,6 +21,7 @@
         <module>oss-plugin-api</module>
         <module>oss-plugin-resize</module>
         <module>oss-plugin-watermark</module>
+        <module>oss-server</module>
     </modules>
 
     <properties>
