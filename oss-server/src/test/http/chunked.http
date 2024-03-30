@@ -168,7 +168,7 @@ Content-Disposition: form-data; name="chunkNumber"
 %}
 
 ### delay
-GET https://hub.dummyapis.com/delay?seconds=2
+GET http://localhost:8081/delay
 
 ### query result
 GET http://localhost:8081/oss-server/query?fileId=abc HTTP/1.1
