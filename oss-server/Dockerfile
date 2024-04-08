@@ -1,4 +1,4 @@
-FROM wulaphp/openjdk:17 as builder
+FROM apzda/eclipse-temurin:21.0.2_13-jre-alpine as builder
 
 ARG SERVICE_JAR
 
@@ -6,7 +6,7 @@ COPY ${SERVICE_JAR} /opt/app/application.jar
 
 RUN java -Djarmode=layertools -jar application.jar extract
 
-FROM wulaphp/openjdk:17
+FROM apzda/eclipse-temurin:21.0.2_13-jre-alpine
 
 ARG SERVICE_NAME
 ARG SERVICE_VER
