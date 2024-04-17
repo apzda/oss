@@ -82,10 +82,13 @@ public class FsFile implements IOssFile {
             builder.setExt(FileUtil.extName(file));
             builder.setFilename(file.getName());
             builder.setContentType(URLConnection.guessContentTypeFromName(file.getName()));
-            builder.setFileId(DigestUtils.md5DigestAsHex(new FileInputStream(file)));
-            try {
+            try (val input = new FileInputStream(file)) {
+                builder.setFileId(DigestUtils.md5DigestAsHex(input));
                 FileTime creationTime = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
                 builder.setCreateTime(creationTime.toMillis());
+            }
+            catch (FileNotFoundException e) {
+                throw e;
             }
             catch (IOException e) {
                 builder.setCreateTime(0);
@@ -99,7 +102,7 @@ public class FsFile implements IOssFile {
 
     @Override
     public boolean delete() throws IOException {
-        return file.delete();
+        return Files.deleteIfExists(file.toPath());
     }
 
 }

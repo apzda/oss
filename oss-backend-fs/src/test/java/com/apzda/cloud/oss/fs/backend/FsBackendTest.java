@@ -49,21 +49,22 @@ class FsBackendTest {
         assertThat(stat).isNotNull();
         assertThat(stat.getExt()).isEqualTo("xml");
         assertThat(stat.getPath()).isEqualTo(path);
+        // when
+
+        System.out.println(path);
+        val deleted = backend.delete(path);
+        // then
+        assertThat(deleted).isTrue();
 
         // given
         val file1 = new File("./pom.xml");
         // when
-        val fileInfo1 = backend.uploadFile(file);
+        val fileInfo1 = backend.uploadFile(file1);
         // then
         assertThat(fileInfo1).isNotNull();
         assertThat(fileInfo1.getExt()).isEqualTo("xml");
         assertThat(fileInfo1.getFileId()).isEqualTo(fileInfo.getFileId());
         assertThat(fileInfo1.getFilename()).isEqualTo("pom.xml");
-
-        // when
-        val deleted = backend.delete(path);
-        // then
-        assertThat(deleted).isTrue();
 
     }
 
