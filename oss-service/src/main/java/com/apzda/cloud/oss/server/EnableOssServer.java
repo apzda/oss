@@ -17,10 +17,8 @@
 package com.apzda.cloud.oss.server;
 
 import com.apzda.cloud.oss.config.OssServiceConfiguration;
-import com.apzda.cloud.oss.proto.OssServiceGsvc;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.PropertySource;
 
 import java.lang.annotation.*;
 
@@ -32,8 +30,7 @@ import java.lang.annotation.*;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Import({ OssServiceGsvc.class, OssServiceConfiguration.class })
-@PropertySource("classpath:apzda.oss.service.properties")
+@Import(OssServiceConfiguration.class)
 @ComponentScan(basePackages = { "com.apzda.cloud.oss.service" })
 @Documented
 public @interface EnableOssServer {
