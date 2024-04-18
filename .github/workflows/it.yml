@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: "${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
@@ -49,11 +49,16 @@ jobs:
           wait-on: http-get://localhost:${{ env.SERVER_PORT_NO }}/actuator/health
       - name: Download ijhttp tools
         run: |-
-          curl -f -L -o ijhttp.zip "https://jb.gg/ijhttp/latest"
-          unzip ijhttp.zip
-          ./ijhttp/ijhttp --version
+          #curl -f -L -o ijhttp.zip "https://jb.gg/ijhttp/latest"
+          #unzip ijhttp.zip
+          #./ijhttp/ijhttp --version
+          docker pull jetbrains/intellij-http-client:233.15026.9
+          docker tag  jetbrains/intellij-http-client:233.15026.9 ijhttp
       - name: Execute HTTP requests
-        run: ./ijhttp/ijhttp oss-server/src/test/http/test.http oss-server/src/test/http/chunked.http
+        run: |-
+          #./ijhttp/ijhttp oss-server/src/test/http/test.http oss-server/src/test/http/chunked.http
+          docker run --rm -v ./oss-server:/workdir --add-host host.docker.internal:host-gateway ijhttp -D \
+                src/test/http/chunked.http src/test/http/test.http
   deploy:
     if: ${{ github.ref == 'refs/heads/main' }}
     needs: [ "build" ]

@@ -5,7 +5,7 @@
     <parent>
         <artifactId>apzda-cloud-gsvc-parent</artifactId>
         <groupId>com.apzda.cloud</groupId>
-        <version>1.2.18</version>
+        <version>1.2.19-SNAPSHOT</version>
     </parent>
     <artifactId>oss</artifactId>
     <version>1.0.7-SNAPSHOT</version>
@@ -29,6 +29,7 @@
     </modules>
 
     <properties>
+        <gsvc.compiler.version>1.2.19-SNAPSHOT</gsvc.compiler.version>
         <maven.plugin.validation>NONE</maven.plugin.validation>
     </properties>
 
@@ -79,6 +80,22 @@
             <url>https://docs.apzda.com/oss</url>
         </site>
     </distributionManagement>
+    <repositories>
+        <repository>
+            <id>ossrh</id>
+            <name>OSS Repository Host</name>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>fail</checksumPolicy>
+            </snapshots>
+        </repository>
+    </repositories>
     <dependencyManagement>
         <dependencies>
             <dependency>

@@ -3,10 +3,10 @@ name: Deploy to OSSRH
 on:
   push:
     tags:
-      - v*
+      - 'v*'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: "${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
