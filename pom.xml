@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>apzda-cloud-gsvc-parent</artifactId>
@@ -8,7 +7,7 @@
         <version>1.2.19</version>
     </parent>
     <artifactId>oss</artifactId>
-    <version>1.0.7-SNAPSHOT</version>
+    <version>1.0.7</version>
     <packaging>pom</packaging>
     <name>Apzda OSS</name>
     <description>Apzda Official OSS module</description>
@@ -64,7 +63,7 @@
         <url>https://github.com/apzda/oss.git</url>
         <connection>scm:git@github.com:apzda/oss.git</connection>
         <developerConnection>scm:git:git@github.com:apzda/oss.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v1.0.7</tag>
     </scm>
 
     <distributionManagement>
@@ -101,52 +100,52 @@
             <dependency>
                 <groupId>com.apzda.cloud</groupId>
                 <artifactId>oss-proto</artifactId>
-                <version>1.0.7-SNAPSHOT</version>
+                <version>1.0.7</version>
             </dependency>
             <dependency>
                 <groupId>com.apzda.cloud</groupId>
                 <artifactId>oss-backend-fs</artifactId>
-                <version>1.0.7-SNAPSHOT</version>
+                <version>1.0.7</version>
             </dependency>
             <dependency>
                 <groupId>com.apzda.cloud</groupId>
                 <artifactId>oss-backend-alioss</artifactId>
-                <version>1.0.7-SNAPSHOT</version>
+                <version>1.0.7</version>
             </dependency>
             <dependency>
                 <groupId>com.apzda.cloud</groupId>
                 <artifactId>oss-backend-minio</artifactId>
-                <version>1.0.7-SNAPSHOT</version>
+                <version>1.0.7</version>
             </dependency>
             <dependency>
                 <groupId>com.apzda.cloud</groupId>
                 <artifactId>oss-backend-txcos</artifactId>
-                <version>1.0.7-SNAPSHOT</version>
+                <version>1.0.7</version>
             </dependency>
             <dependency>
                 <groupId>com.apzda.cloud</groupId>
                 <artifactId>oss-plugin-api</artifactId>
-                <version>1.0.7-SNAPSHOT</version>
+                <version>1.0.7</version>
             </dependency>
             <dependency>
                 <groupId>com.apzda.cloud</groupId>
                 <artifactId>oss-plugin-resize</artifactId>
-                <version>1.0.7-SNAPSHOT</version>
+                <version>1.0.7</version>
             </dependency>
             <dependency>
                 <groupId>com.apzda.cloud</groupId>
                 <artifactId>oss-plugin-watermark</artifactId>
-                <version>1.0.7-SNAPSHOT</version>
+                <version>1.0.7</version>
             </dependency>
             <dependency>
                 <groupId>com.apzda.cloud</groupId>
                 <artifactId>oss-client</artifactId>
-                <version>1.0.7-SNAPSHOT</version>
+                <version>1.0.7</version>
             </dependency>
             <dependency>
                 <groupId>com.apzda.cloud</groupId>
                 <artifactId>oss-service</artifactId>
-                <version>1.0.7-SNAPSHOT</version>
+                <version>1.0.7</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
