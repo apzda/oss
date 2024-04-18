@@ -5,7 +5,7 @@
     <parent>
         <artifactId>apzda-cloud-gsvc-parent</artifactId>
         <groupId>com.apzda.cloud</groupId>
-        <version>1.2.19-SNAPSHOT</version>
+        <version>1.2.19</version>
     </parent>
     <artifactId>oss</artifactId>
     <version>1.0.7-SNAPSHOT</version>
@@ -95,6 +95,7 @@
             </snapshots>
         </repository>
     </repositories>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -149,14 +150,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    <profiles>
-        <profile>
-            <id>it</id>
-            <properties>
-                <gsvc.compiler.version>${parent.version}</gsvc.compiler.version>
-            </properties>
-        </profile>
-    </profiles>
+
     <build>
         <plugins>
             <plugin>
