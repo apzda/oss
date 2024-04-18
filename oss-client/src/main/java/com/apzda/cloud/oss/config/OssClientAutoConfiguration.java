@@ -38,7 +38,7 @@ import org.springframework.core.Ordered;
  * @version 1.0.0
  * @since 1.0.0
  **/
-@Import({ OssClientHelper.class, AliOssBackendConfiguration.class, MinioBackendConfiguration.class,
+@Import({ OssContext.class, AliOssBackendConfiguration.class, MinioBackendConfiguration.class,
         TxCosBackendConfiguration.class, OssServiceGsvc.class })
 @AutoConfiguration
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)

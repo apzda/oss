@@ -19,7 +19,7 @@ package com.apzda.cloud.oss.service;
 import com.apzda.cloud.gsvc.ext.GsvcExt;
 import com.apzda.cloud.oss.backend.OssBackend;
 import com.apzda.cloud.oss.cache.FileInfoCache;
-import com.apzda.cloud.oss.config.OssClientHelper;
+import com.apzda.cloud.oss.config.OssContext;
 import com.apzda.cloud.oss.config.OssConfigProperties;
 import com.apzda.cloud.oss.config.OssServiceProperties;
 import com.apzda.cloud.oss.exception.ChunkNotFoundException;
@@ -74,7 +74,7 @@ public class OssServiceImpl implements OssService, InitializingBean {
             newReq.addFiles(request.getFile());
             request = newReq.build();
         }
-        val ossBackend = OssClientHelper.getOssBackend();
+        val ossBackend = OssContext.getOssBackend();
         val builder = UploadRes.newBuilder();
         val fileCount = request.getFilesCount();
         val path = request.getPath();
@@ -197,7 +197,7 @@ public class OssServiceImpl implements OssService, InitializingBean {
                     }
 
                     try {
-                        val ossBackend = OssClientHelper.getOssBackend();
+                        val ossBackend = OssContext.getOssBackend();
                         val disables = Splitter.on(",")
                             .omitEmptyStrings()
                             .trimResults()

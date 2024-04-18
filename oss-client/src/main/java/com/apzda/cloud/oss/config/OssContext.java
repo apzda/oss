@@ -29,7 +29,7 @@ import org.springframework.lang.NonNull;
  * @since 1.0.0
  **/
 @Configuration(proxyBeanMethods = false)
-public class OssClientHelper implements ApplicationContextAware {
+public class OssContext implements ApplicationContextAware {
 
     private static volatile OssBackend ossBackend;
 
@@ -40,6 +40,7 @@ public class OssClientHelper implements ApplicationContextAware {
         context = applicationContext;
     }
 
+    @NonNull
     public synchronized static OssBackend getOssBackend() {
         if (ossBackend != null) {
             return ossBackend;

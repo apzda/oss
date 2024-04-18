@@ -17,7 +17,7 @@
 package com.apzda.cloud.oss.func;
 
 import cn.hutool.core.util.URLUtil;
-import com.apzda.cloud.oss.config.OssClientHelper;
+import com.apzda.cloud.oss.config.OssContext;
 import lombok.val;
 import org.springframework.http.CacheControl;
 import org.springframework.lang.NonNull;
@@ -46,7 +46,7 @@ public class DownloadHandlerFunction implements HandlerFunction<ServerResponse> 
     public ServerResponse handle(@NonNull ServerRequest request) throws Exception {
         try {
             val file = request.path().replaceFirst(pathPrefix, "/");
-            val ossBackend = OssClientHelper.getOssBackend();
+            val ossBackend = OssContext.getOssBackend();
             val ossFile = ossBackend.getFile(file);
             val stat = ossFile.stat();
             return ServerResponse.ok()

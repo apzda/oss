@@ -17,7 +17,7 @@
 package com.apzda.cloud.oss.file;
 
 import com.apzda.cloud.oss.backend.OssBackend;
-import com.apzda.cloud.oss.config.OssClientHelper;
+import com.apzda.cloud.oss.config.OssContext;
 import com.apzda.cloud.oss.proto.FileInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -47,7 +47,7 @@ public class OssFile implements IOssFile {
             filePath = "/" + filePath;
         }
 
-        OssBackend backend = OssClientHelper.getOssBackend();
+        OssBackend backend = OssContext.getOssBackend();
 
         ossFile = backend.getFile(filePath);
     }
