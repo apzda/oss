@@ -29,7 +29,6 @@
     </modules>
 
     <properties>
-        <gsvc.compiler.version>1.2.19-SNAPSHOT</gsvc.compiler.version>
         <maven.plugin.validation>NONE</maven.plugin.validation>
     </properties>
 
@@ -150,26 +149,15 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+    <profiles>
+        <profile>
+            <id>it</id>
+            <properties>
+                <gsvc.compiler.version>${parent.version}</gsvc.compiler.version>
+            </properties>
+        </profile>
+    </profiles>
     <build>
-        <pluginManagement>
-            <plugins>
-                <!-- maven-release-plugin -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <version>3.0.1</version>
-                    <configuration>
-                        <preparationGoals>clean verify</preparationGoals>
-                        <autoVersionSubmodules>true</autoVersionSubmodules>
-                        <tagNameFormat>v@{project.version}</tagNameFormat>
-                        <generateReleasePoms>false</generateReleasePoms>
-                        <releaseProfiles>release</releaseProfiles>
-                        <arguments>-Dmaven.site.skip=true</arguments>
-                        <goals>clean install</goals>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>io.spring.javaformat</groupId>

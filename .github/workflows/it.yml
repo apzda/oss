@@ -94,4 +94,4 @@ jobs:
               "password": "${{ secrets.OSSRH_TOKEN }}"
             }]
       - name: Deploy to OSSRH
-        run: mvn -P+deploy -Djava.version=17 -DskipTests=true clean deploy
+        run: mvn -P it,deploy -Djava.version=17 -DskipTests=true clean deploy
