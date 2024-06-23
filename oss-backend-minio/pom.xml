@@ -17,7 +17,7 @@
         <dependency>
             <groupId>io.minio</groupId>
             <artifactId>minio</artifactId>
-            <version>8.5.9</version>
+            <version>8.5.11</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -30,5 +30,12 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <repositories>
+        <repository>
+            <id>maven_central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2/</url>
+        </repository>
+    </repositories>
 
 </project>
