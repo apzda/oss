@@ -61,7 +61,12 @@ public class FsFile implements IOssFile {
 
     @Override
     public File getLocalFile() throws IOException {
-        return file;
+        if (file.exists()) {
+            return file;
+        }
+        else {
+            throw new FileNotFoundException(rootDir + filePath);
+        }
     }
 
     @Override

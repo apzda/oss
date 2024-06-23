@@ -16,11 +16,13 @@
  */
 package com.apzda.cloud.oss.service;
 
+import cn.hutool.core.io.FileUtil;
 import com.apzda.cloud.gsvc.ext.GsvcExt;
+import com.apzda.cloud.gsvc.io.Base64DecodeMultipartFile;
 import com.apzda.cloud.oss.backend.OssBackend;
 import com.apzda.cloud.oss.cache.FileInfoCache;
-import com.apzda.cloud.oss.config.OssContext;
 import com.apzda.cloud.oss.config.OssConfigProperties;
+import com.apzda.cloud.oss.config.OssContext;
 import com.apzda.cloud.oss.config.OssServiceProperties;
 import com.apzda.cloud.oss.exception.ChunkNotFoundException;
 import com.apzda.cloud.oss.exception.FileExtNameNotAllowedException;
@@ -42,6 +44,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -69,13 +72,37 @@ public class OssServiceImpl implements OssService, InitializingBean {
 
     @Override
     public UploadRes upload(UploadReq request) {
+        val builder = UploadRes.newBuilder();
+
         if (request.hasFile()) {
+            // 单一文件
             val newReq = UploadReq.newBuilder(request);
             newReq.addFiles(request.getFile());
             request = newReq.build();
         }
+        else if (request.hasContent()) {
+            // base64编码的图片上传
+            val uploadFilebuilder = GsvcExt.UploadFile.newBuilder();
+            try {
+                val mFile = Base64DecodeMultipartFile.base64Convert(request.getContent());
+                uploadFilebuilder.setContentType(Objects.requireNonNull(mFile.getContentType()));
+                uploadFilebuilder.setFilename(StringUtils.defaultIfBlank(mFile.getOriginalFilename(), mFile.getName()));
+                uploadFilebuilder.setName(StringUtils.defaultIfBlank(request.getName(), mFile.getName()));
+                uploadFilebuilder.setSize(mFile.getSize());
+                uploadFilebuilder.setExt(FileUtil.extName(uploadFilebuilder.getFilename()));
+                val tmpFile = File.createTempFile("UP_LD_", ".part");
+                uploadFilebuilder.setFile(tmpFile.getAbsolutePath());
+                mFile.transferTo(tmpFile);
+            }
+            catch (IOException e) {
+                uploadFilebuilder.setError(e.getMessage());
+            }
+            val newReq = UploadReq.newBuilder(request);
+            newReq.addFiles(uploadFilebuilder.build());
+            request = newReq.build();
+        }
+
         val ossBackend = OssContext.getOssBackend();
-        val builder = UploadRes.newBuilder();
         val fileCount = request.getFilesCount();
         val path = request.getPath();
         log.debug("Start dealing file upload: fileCount = {}, path = {}, backend = {}", fileCount, path,
@@ -103,13 +130,20 @@ public class OssServiceImpl implements OssService, InitializingBean {
                         fileInfo = FileInfo.newBuilder();
                         fileInfo.setError(1);
                         fileInfo.setMessage(e.getMessage());
-                        log.error("Upload fail: fileName = {}, error = {}", filename, e.getMessage());
+                        log.error("Upload fail: fileName = {}", filename, e);
                     }
                     finally {
-                        val f = new File(file.getFile());
-                        if (f.exists()) {
-                            val deleted = f.delete();
-                            log.debug("Delete the original file: {} - {}", deleted, f);
+                        try {
+                            if (StringUtils.isNotBlank(file.getFile())) {
+                                val f = new File(file.getFile());
+                                if (f.exists()) {
+                                    val deleted = f.delete();
+                                    log.debug("Delete the original file: {} - {}", deleted, f);
+                                }
+                            }
+                        }
+                        catch (Exception e) {
+                            log.warn("Cannot delete tmp file: {}", e.getMessage());
                         }
                     }
                     fileInfo.setFilename(filename);

@@ -30,6 +30,7 @@ message UploadReq {
   repeated gsvc.UploadFile files = 2 [(buf.validate.field).repeated.min_items = 0]; // 文件列表
   optional gsvc.UploadFile file = 3;
   optional string disables = 4;
+  optional string content = 5;
   optional string path = 20;
 }
 

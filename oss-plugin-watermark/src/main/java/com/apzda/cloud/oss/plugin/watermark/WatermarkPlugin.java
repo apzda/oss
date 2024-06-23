@@ -89,8 +89,17 @@ public class WatermarkPlugin implements Plugin {
         if (imgWidth < width) {
             return file;
         }
+        val watermarkImg = ossBackend.getFile(watermark);
+        BufferedImage waterImg;
+        try {
+            val watermarkLocalImg = watermarkImg.getLocalFile();
+            waterImg = ImageIO.read(watermarkLocalImg);
+        }
+        catch (Exception e) {
+            log.warn("Watermark image '{}' does not exist", watermark);
+            return file;
+        }
 
-        val waterImg = ImageIO.read(ossBackend.getFile(watermark).getLocalFile());
         val waterImage = generateWaterImage(waterImg, opacity, rotate);
         val wImgWidth = waterImage.getWidth();
         val wImgHeight = waterImage.getHeight();
