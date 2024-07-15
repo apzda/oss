@@ -20,13 +20,16 @@ import cn.hutool.core.util.StrUtil;
 import com.apzda.cloud.oss.backend.OssBackend;
 import com.apzda.cloud.oss.config.OssContext;
 import com.apzda.cloud.oss.proto.FileInfo;
+import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -61,6 +64,18 @@ public class OssFile implements IOssFile {
         catch (IOException e) {
             log.warn("Failed to open file {}: {}", filePath, e.getMessage());
         }
+    }
+
+    @Nonnull
+    public static Optional<OssBackend> getDefaultBackend() {
+        try {
+            val ossBackend = OssContext.getOssBackend();
+            return Optional.of(ossBackend);
+        }
+        catch (Exception e) {
+            log.warn("Failed to get default backend: {}", e.getMessage());
+        }
+        return Optional.empty();
     }
 
     public File getLocalFile() throws IOException {
