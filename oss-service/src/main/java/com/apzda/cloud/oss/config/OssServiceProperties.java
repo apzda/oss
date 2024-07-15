@@ -38,6 +38,7 @@ import java.util.Map;
 @Data
 public class OssServiceProperties {
 
+    @Getter(AccessLevel.PRIVATE)
     public static final List<String> DEFAULT_FILE_TYPES = List.of("png", "jpeg", "jpg", "zip", "txt", "rar", "7z",
             "xls", "xlsx", "doc", "docx", "xml", "json");
 
