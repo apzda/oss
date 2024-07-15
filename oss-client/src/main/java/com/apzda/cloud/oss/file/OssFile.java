@@ -16,6 +16,7 @@
  */
 package com.apzda.cloud.oss.file;
 
+import cn.hutool.core.util.StrUtil;
 import com.apzda.cloud.oss.backend.OssBackend;
 import com.apzda.cloud.oss.config.OssContext;
 import com.apzda.cloud.oss.proto.FileInfo;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -34,29 +36,44 @@ import java.io.InputStream;
 @Slf4j
 public class OssFile implements IOssFile {
 
-    private final IOssFile ossFile;
+    private final String filePath;
+
+    private IOssFile ossFile;
 
     private FileInfo fileInfo;
 
-    public OssFile(String filePath) throws IOException {
+    public OssFile(String filePath) {
         if (StringUtils.isBlank(filePath)) {
             throw new IllegalStateException("filePath cannot be blank");
         }
 
         if (!filePath.startsWith("/")) {
-            filePath = "/" + filePath;
+            this.filePath = "/" + filePath;
+        }
+        else {
+            this.filePath = filePath;
         }
 
-        OssBackend backend = OssContext.getOssBackend();
-
-        ossFile = backend.getFile(filePath);
+        try {
+            OssBackend backend = OssContext.getOssBackend();
+            ossFile = backend.getFile(this.filePath);
+        }
+        catch (IOException e) {
+            log.warn("Failed to open file {}: {}", filePath, e.getMessage());
+        }
     }
 
     public File getLocalFile() throws IOException {
+        if (ossFile == null) {
+            throw new FileNotFoundException(StrUtil.format("{} (Not Found)", filePath));
+        }
         return ossFile.getLocalFile();
     }
 
     public InputStream getInputStream() throws IOException {
+        if (ossFile == null) {
+            throw new FileNotFoundException(StrUtil.format("{} (Not Found)", filePath));
+        }
         return ossFile.getInputStream();
     }
 
@@ -64,7 +81,10 @@ public class OssFile implements IOssFile {
         if (fileInfo != null) {
             return fileInfo;
         }
-        synchronized (ossFile) {
+        if (ossFile == null) {
+            throw new FileNotFoundException(StrUtil.format("{} (Not Found)", filePath));
+        }
+        synchronized (filePath) {
             if (fileInfo != null) {
                 return fileInfo;
             }
@@ -75,6 +95,9 @@ public class OssFile implements IOssFile {
 
     @Override
     public boolean delete() throws IOException {
+        if (ossFile == null) {
+            throw new FileNotFoundException(StrUtil.format("{} (Not Found)", filePath));
+        }
         return ossFile.delete();
     }
 
