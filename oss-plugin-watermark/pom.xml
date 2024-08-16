@@ -10,7 +10,7 @@
     <artifactId>oss-plugin-watermark</artifactId>
 
     <properties>
-        <imageio.version>3.10.1</imageio.version>
+        <imageio.version>3.11.0</imageio.version>
     </properties>
     <dependencies>
         <dependency>
