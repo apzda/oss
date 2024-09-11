@@ -17,6 +17,7 @@
 package com.apzda.cloud.oss.tx.file;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.crypto.SecureUtil;
 import com.apzda.cloud.oss.backend.OssBackend;
 import com.apzda.cloud.oss.config.BackendConfig;
 import com.apzda.cloud.oss.file.IOssFile;
@@ -25,13 +26,11 @@ import com.apzda.cloud.oss.tx.backend.TxCosBackend;
 import com.qcloud.cos.COSClient;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.apache.commons.codec.digest.Md5Crypt;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.*;
 import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 
 /**
  * @author fengz (windywany@gmail.com)
@@ -72,8 +71,7 @@ public class TxOssFile implements IOssFile {
     public File getLocalFile() throws IOException {
         val tmpDir = config.getTmpDir();
         val stat = stat();
-        val localFileName = tmpDir + Md5Crypt.md5Crypt(stat.getFileId().getBytes(StandardCharsets.UTF_8)) + "."
-                + stat.getExt();
+        val localFileName = tmpDir + SecureUtil.md5(stat.getFileId()) + "." + stat.getExt();
         var localFile = new File(localFileName);
         if (localFile.exists()) {
             return localFile;
