@@ -9,7 +9,7 @@
 
     <artifactId>oss-plugin-resize</artifactId>
     <properties>
-        <imageio.version>3.11.0</imageio.version>
+        <imageio.version>3.12.0</imageio.version>
     </properties>
     <dependencies>
         <dependency>
